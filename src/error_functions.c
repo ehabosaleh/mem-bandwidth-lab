@@ -3,18 +3,14 @@
 #include "tlpi_hdr.h"
 #include "ename.c.inc"          /* Defines ename and MAX_ENAME */
 
-NORETURN
-static void
-terminate(Boolean useExit3)
+#ifdef __GNUC__
+__attribute__ ((__noreturn__))
+#endif
+
+static void terminate(Boolean useExit3)
 {
     char *s;
-
-    /* Dump core if EF_DUMPCORE environment variable is defined and
-       is a nonempty string; otherwise call exit(3) or _exit(2),
-       depending on the value of 'useExit3'. */
-
     s = getenv("EF_DUMPCORE");
-
     if (s != NULL && *s != '\0')
         abort();
     else if (useExit3)
@@ -23,18 +19,8 @@ terminate(Boolean useExit3)
         _exit(EXIT_FAILURE);
 }
 
-/* Diagnose 'errno' error by:
 
-      * outputting a string containing the error name (if available
-        in 'ename' array) corresponding to the value in 'err', along
-        with the corresponding error message from strerror(), and
-
-      * outputting the caller-supplied error message specified in
-        'format' and 'ap'. */
-
-static void
-outputError(Boolean useErr, int err, Boolean flushStdout,
-        const char *format, va_list ap)
+static void outputError(Boolean useErr, int err, Boolean flushStdout, const char *format, va_list ap)
 {
 #define BUF_SIZE 500
     char buf[BUF_SIZE], userMsg[BUF_SIZE], errText[BUF_SIZE];
@@ -63,11 +49,8 @@ outputError(Boolean useErr, int err, Boolean flushStdout,
     fflush(stderr);           /* In case stderr is not line-buffered */
 }
 
-/* Display error message including 'errno' diagnostic, and
-   return to caller */
 
-void
-errMsg(const char *format, ...)
+void errMsg(const char *format, ...)
 {
     va_list argList;
     int savedErrno;
@@ -81,11 +64,8 @@ errMsg(const char *format, ...)
     errno = savedErrno;
 }
 
-/* Display error message including 'errno' diagnostic, and
-   terminate the process */
 
-void
-errExit(const char *format, ...)
+void errExit(const char *format, ...)
 {
     va_list argList;
 
@@ -96,23 +76,8 @@ errExit(const char *format, ...)
     terminate(TRUE);
 }
 
-/* Display error message including 'errno' diagnostic, and
-   terminate the process by calling _exit().
 
-   The relationship between this function and errExit() is analogous
-   to that between _exit(2) and exit(3): unlike errExit(), this
-   function does not flush stdout and calls _exit(2) to terminate the
-   process (rather than exit(3), which would cause exit handlers to be
-   invoked).
-
-   These differences make this function especially useful in a library
-   function that creates a child process that must then terminate
-   because of an error: the child must terminate without flushing
-   stdio buffers that were partially filled by the caller and without
-   invoking exit handlers that were established by the caller. */
-
-void
-err_exit(const char *format, ...)
+void err_exit(const char *format, ...)
 {
     va_list argList;
 
@@ -123,11 +88,8 @@ err_exit(const char *format, ...)
     terminate(FALSE);
 }
 
-/* The following function does the same as errExit(), but expects
-   the error number in 'errnum' */
 
-void
-errExitEN(int errnum, const char *format, ...)
+void errExitEN(int errnum, const char *format, ...)
 {
     va_list argList;
 
@@ -140,8 +102,7 @@ errExitEN(int errnum, const char *format, ...)
 
 /* Print an error message (without an 'errno' diagnostic) */
 
-void
-fatal(const char *format, ...)
+void fatal(const char *format, ...)
 {
     va_list argList;
 
@@ -154,8 +115,7 @@ fatal(const char *format, ...)
 
 /* Print a command usage error message and terminate the process */
 
-void
-usageErr(const char *format, ...)
+void usageErr(const char *format, ...)
 {
     va_list argList;
 
@@ -170,11 +130,8 @@ usageErr(const char *format, ...)
     exit(EXIT_FAILURE);
 }
 
-/* Diagnose an error in command-line arguments and
-   terminate the process */
 
-void
-cmdLineErr(const char *format, ...)
+void cmdLineErr(const char *format, ...)
 {
     va_list argList;
 
