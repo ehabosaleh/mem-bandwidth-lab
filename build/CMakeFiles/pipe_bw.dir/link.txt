@@ -1,0 +1,1 @@
+/usr/bin/cc  -arch arm64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/pipe_bw.dir/tests/pipe_main.c.o -o /Users/di93qad/C/mem-bandwidth-lab/bin/pipe_bw  libpipe_bench.a

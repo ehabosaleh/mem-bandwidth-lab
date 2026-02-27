@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpipe_bench.a CMakeFiles/pipe_bench.dir/src/pipe_bench.c.o
+/usr/bin/ranlib libpipe_bench.a

@@ -1,0 +1,4 @@
+/Users/di93qad/C/mem-bandwidth-lab/build/CMakeFiles/pipe_bench.dir
+/Users/di93qad/C/mem-bandwidth-lab/build/CMakeFiles/pipe_bw.dir
+/Users/di93qad/C/mem-bandwidth-lab/build/CMakeFiles/edit_cache.dir
+/Users/di93qad/C/mem-bandwidth-lab/build/CMakeFiles/rebuild_cache.dir
