@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        build_type: [Release, Debug]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc clang
+
+      - name: Configure (CMake)
+        env:
+          CC: ${{ matrix.compiler }}
+        run: |
+          cmake -S . -B build-ci -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: |
+          cmake --build build-ci --config ${{ matrix.build_type }}
+
+      # Optional: sanity-run (kept non-fatal because benchmark CLIs vary)
+      - name: Sanity run (optional)
+        run: |
+          if [ -x ./bin/pipe_bw ]; then
+            ./bin/pipe_bw || true
+          fi
