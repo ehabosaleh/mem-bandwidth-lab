@@ -1,6 +1,6 @@
 # POSIX Pipe IPC Microbenchmark
 
-This benchmark measures **one-way latency** and **effective bandwidth** of POSIX pipes on a single machine.
+This benchmark measures **one-way latency** and **effective bandwidth** of POSIX pipes on a single host.
 
 It uses a parent–child process model with blocking `read()`/`write()` and a ping-pong protocol to obtain round-trip timing.
 
