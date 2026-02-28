@@ -33,6 +33,8 @@ typedef enum{
     MODE_BW
 } bench_mode_t;
 
+size_t print_buf_size(int fd);
+void set_buf_size(int fd,size_t size);
 void write_all(int fd, const void*buff,size_t n);
 void read_all(int fd,void*buff,size_t n);
 void usage(const char *argv0);

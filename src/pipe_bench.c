@@ -8,7 +8,14 @@ size_t print_buf_size(int fd){
 #endif
 
 }
+void set_buf_size(int fd,size_t size){
+ #if defined(__linux__)
+           fcntl(fd,F_SETPIPE_SZ,size);
+#else
+           fprintf(stderr,"Not linux environment\n");
+#endif
 
+}
 void write_all(int fd, const void*buff,size_t n){
     unsigned const char*p=(const unsigned char*) buff;
     while(n){
