@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef PIPE_BENCH_H
 #define PIPE_BENCH_H
 
@@ -13,6 +15,7 @@
 #include<stddef.h>
 #include<limits.h>
 #include<math.h>
+#include<fcntl.h> //provide control over file descriptors
 
 static inline double now_sec(void){
     struct timespec ts;

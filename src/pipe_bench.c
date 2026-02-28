@@ -1,5 +1,14 @@
 #include"../include/pipe_bench.h"
 
+size_t print_buf_size(int fd){
+#if defined(__linux__)
+        return (size_t)fcntl(fd,F_GETPIPE_SZ);
+#else
+        return 0;
+#endif
+
+}
+
 void write_all(int fd, const void*buff,size_t n){
     unsigned const char*p=(const unsigned char*) buff;
     while(n){
