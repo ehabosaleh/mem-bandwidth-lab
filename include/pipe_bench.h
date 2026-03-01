@@ -4,18 +4,8 @@
 #define PIPE_BENCH_H
 
 #define _GNU_SOURCE
-#include<errno.h>
-#include<sys/wait.h>
-#include<time.h>
-#include<unistd.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
-#include<stdint.h>
-#include<stddef.h>
-#include<limits.h>
-#include<math.h>
-#include<fcntl.h> //provide control over file descriptors
+
+#include"mem_bench.h"
 
 static inline double now_sec(void){
     struct timespec ts;
