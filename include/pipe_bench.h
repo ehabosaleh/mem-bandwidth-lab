@@ -1,8 +1,5 @@
-#pragma once
-
 #ifndef PIPE_BENCH_H
 #define PIPE_BENCH_H
-
 #define _GNU_SOURCE
 
 #include"mem_bench.h"
