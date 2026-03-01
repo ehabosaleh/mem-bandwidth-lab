@@ -4,16 +4,6 @@
 
 #include"mem_bench.h"
 
-static inline double now_sec(void){
-    struct timespec ts;
-    if(clock_gettime(CLOCK_MONOTONIC,&ts)!=0){
-        perror("Error: clock_gettime");
-        exit(EXIT_FAILURE);
-    }
-    
-    return (double)ts.tv_sec+(double)ts.tv_nsec*1e-9;
-}
-
 typedef enum{
     MODE_BOTH,
     MODE_LAT,
