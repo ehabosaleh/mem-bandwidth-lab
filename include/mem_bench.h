@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-static inline double now_sec(void){
+__attribute__((always_inline)) static inline double now_sec(void){
      struct timespec ts;
      if(clock_gettime(CLOCK_MONOTONIC,&ts)!=0){
          perror("Error: clock_gettime");
