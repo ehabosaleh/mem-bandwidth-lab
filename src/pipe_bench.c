@@ -59,7 +59,7 @@ void usage(const char *argv0) {
          "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N]\n"
          "Examples:\n"
          "  %s --max-bytes=64KiB \n"
-         "  %s --min-bytes=0 --max-bytes=1GiB --steps=31 --mode=bw \n",
+         "  %s --min-bytes=0 --max-bytes=1GiB \n",
          argv0, argv0, argv0);
      exit(EXIT_FAILURE);
  }
