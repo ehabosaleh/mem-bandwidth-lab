@@ -20,7 +20,7 @@ int main(int argc,char**argv){
              usage(argv[0]);
          }
      }
-    mq_setup(max_bytes);
+    mq_setup(8192);
 
     pid_t pid=fork();
     if(pid<0){

@@ -3,10 +3,11 @@
 
 #include"mem_bench.h"
 
-#define P2C "mq_parent_to_child"
-#define C2P "mq_child_to_parent"
-mqd_t mq_p2c;
-mqd_t mq_c2p;
+#define P2C "/mq_parent_to_child"
+#define C2P "/mq_child_to_parent"
+
+extern mqd_t mq_p2c;
+extern mqd_t mq_c2p;
 
 void send_all(mqd_t mq, const void *buf, size_t size);
 void recv_all(mqd_t mq, void *buf, size_t size);
