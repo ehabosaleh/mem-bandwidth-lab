@@ -88,3 +88,74 @@ double measure_latency_one(size_t msg_size, int iters, int warmup){
     rtt=rtt/2.0;
     return rtt;
 }
+
+void mq_setup(size_t max_msg){
+
+    struct mq_attr attr;
+    attr.mq_flags=0;
+    attr.mq_maxmsg=64;
+    attr.mq_msgsize=max_msg;
+    attr.mq_curmsgs=0;
+
+    mq_unlink(P2C);
+    mq_unlink(C2P);
+
+    mq_p2c=mq_open(P2C,O_CREAT|O_RDWR, 0777, &attr);
+    mq_c2p=mq_open(C2P,O_CREAT|O_RDWR, 0777, &attr);
+
+    if (mq_p2c==(mqd_t)-1||mq_c2p==(mqd_t)-1){
+        perror("Message Queue: mq_open");
+        exit(EXIT_FAILURE);
+    }
+
+}
+
+void mq_cleanup(void){
+    mq_close(mq_p2c);
+    mq_close(mq_c2p);
+
+    mq_unlink(P2C);
+    mq_unlink(C2P);
+}
+
+ void usage(const char *argv0) {
+       fprintf(stderr,
+           "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N]\n"
+           "Examples:\n"
+           "  %s --max-bytes=64KiB \n"
+           "  %s --min-bytes=0 --max-bytes=1GiB \n",
+           argv0, argv0, argv0);
+       exit(EXIT_FAILURE);
+   }
+
+ size_t parse_size(const char* s){
+      char*end=NULL;
+      errno=0;
+      unsigned long long v=strtoull(s,&end,10);
+      if (errno!=0 || end==s){
+           fprintf(stderr, "Invalid size: %s\n", s);
+           exit(EXIT_FAILURE);
+       }
+      unsigned long long mul=1;
+      if(*end){
+          if(strcasecmp(end,"k")==0) mul=1000ULL;
+          else if(strcasecmp(end,"m")==0) mul=1000ULL*1000ULL;
+          else if(strcasecmp(end,"g")==0) mul=1000ULL*1000ULL*1000ULL;
+          else if(strcasecmp(end,"kib")==0) mul=1024ULL;
+          else if(strcasecmp(end,"mib")==0) mul=1024ULL*1024ULL;
+          else if(strcasecmp(end,"gib")==0) mul=1024ULL*1024ULL*1024ULL;
+          else {
+               fprintf(stderr, "Unknown size suffix: %s\n", end);
+               exit(EXIT_FAILURE);
+           }
+      }
+      if(mul!=0&&v>(unsigned long)SIZE_MAX/mul){
+              fprintf(stderr,"Passed size is too large\n");
+              exit(EXIT_FAILURE);
+      }
+
+      return (size_t)v*mul;
+
+
+
+  }
