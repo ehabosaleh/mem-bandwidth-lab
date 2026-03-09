@@ -41,5 +41,5 @@ jobs:
       - name: Message Queue Benchmark
         run: |
           if [ -x ./bin/mq_bw ]; then
-            ./bin/mq_bw || true
+            ./bin/mq_bw --max-bytes=1GiB || true
           fi
