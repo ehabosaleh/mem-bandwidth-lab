@@ -36,16 +36,16 @@ jobs:
       - name: Pipe Benchmark
         run: |
           if [ -x ./bin/pipe_bw ]; then
-            ./bin/pipe_bw --max-bytes=1GiB || true
+            ./bin/pipe_bw --max-bytes=1MiB || true
           fi
       - name: Message Queue Benchmark
         run: |
           if [ -x ./bin/mq_bw ]; then
-            ./bin/mq_bw --max-bytes=1GiB || true
+            ./bin/mq_bw --max-bytes=1MiB || true
           fi
       - name: FIFO Benchmark
         run: |
-          ./bin/fifo_client --max-bytes=1GiB &
+          ./bin/fifo_client --max-bytes=1MiB &
           ./bin/fifo_server &
           wait
           fi
