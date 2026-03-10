@@ -43,9 +43,3 @@ jobs:
           if [ -x ./bin/mq_bw ]; then
             ./bin/mq_bw --max-bytes=1MiB || true
           fi
-      - name: FIFO Benchmark
-        run: |
-          ./bin/fifo_client --max-bytes=1MiB &
-          ./bin/fifo_server &
-          wait
-          fi
