@@ -6,8 +6,9 @@ The following IPC mechanisms are evaluated:
 
 1. POSIX Pipes (pipe())
 2. POSIX Named Pipes (FIFOs)
-3. TODO: POSIX Message Queues
-4. TODO: POSIX Shared Memeory
-5. TODO: TCP/IP Sockets
+3. POSIX Message Queues:
+   * TODO: Fragment large messages
+5. TODO: POSIX Shared Memeory
+6. TODO: TCP/IP Sockets
 
 All benchmarks use a ping-pong methodology to derive latency and bandwidth.
