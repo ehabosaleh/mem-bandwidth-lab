@@ -17,10 +17,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install toolchain
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build gcc clang
+     # - name: Install toolchain
+     #   run: |
+     #     sudo apt-get update
+     #     sudo apt-get install -y cmake ninja-build gcc clang
 
       - name: Configure (CMake)
         env:
@@ -32,7 +32,6 @@ jobs:
         run: |
           cmake --build build-ci --config ${{ matrix.build_type }}
 
-      # Optional: sanity-run (kept non-fatal because benchmark CLIs vary)
       - name: Pipe Benchmark
         run: |
           if [ -x ./bin/pipe_bw ]; then
