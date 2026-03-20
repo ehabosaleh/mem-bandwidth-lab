@@ -17,11 +17,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-     # - name: Install toolchain
-     #   run: |
-     #     sudo apt-get update
-     #     sudo apt-get install -y cmake ninja-build gcc clang
-
       - name: Configure (CMake)
         env:
           CC: ${{ matrix.compiler }}
@@ -35,10 +30,10 @@ jobs:
       - name: Pipe Benchmark
         run: |
           if [ -x ./bin/pipe_bw ]; then
-            ./bin/pipe_bw --max-bytes=1MiB || true
+            ./bin/pipe_bw --max-bytes=100MiB || true
           fi
       - name: Message Queue Benchmark
         run: |
           if [ -x ./bin/mq_bw ]; then
-            ./bin/mq_bw --max-bytes=1MiB || true
+            ./bin/mq_bw --max-bytes=100MiB || true
           fi
