@@ -18,6 +18,7 @@
 #include<sys/stat.h>
 #include<sys/wait.h>
 #include<mqueue.h>
+#include <sched.h> // CPU cores affinity
 
 __attribute__((always_inline)) static inline double now_sec(void){
      struct timespec ts;
