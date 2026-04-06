@@ -117,15 +117,14 @@ void shm_memcpy_read(shm_region *shm, void *dst, size_t size){
 
 }
 
-void run_writer(shm_region *shm, int core, int warmup, int iters){
+void run_writer(shm_region *shm, int core, int warmup, int iters,size_t min_bytes, size_t max_bytes){
 	pin_cpu(core);
 	char *src=aligned_alloc(64,MAX_SIZE);
 	memset(src,0xAB,MAX_SIZE);
 	while (!shm->initialized);
 	
-	printf("#Size\tLatency(us)\tBandwidth(GB/s)\n");
-	
-	for(size_t size=1;size<=MAX_SIZE;size*=2){
+	printf("%-20s %-20s %-20s\n","Bytes","Latency(us)","Bandwidth(MiB/s)");	
+	for(size_t size=min_bytes;size<=max_bytes;size*=2){
 		shm->size=size;
 		
 		for(int i=0;i<warmup;i++){

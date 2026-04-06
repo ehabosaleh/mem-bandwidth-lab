@@ -31,7 +31,7 @@ void shm_signal_done(shm_region *shm);
 void shm_memcpy_write(shm_region *shm, const void *src, size_t size);
 void shm_memcpy_read(shm_region *shm, void *dst, size_t size);
 
-void run_writer(shm_region *shm,int core, int warmup, int iters);
+void run_writer(shm_region *shm,int core, int warmup, int iters, size_t min_bytes, size_t max_bytes);
 void run_reader(shm_region *shm,int core);
 
 #endif
