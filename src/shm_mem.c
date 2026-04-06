@@ -47,3 +47,47 @@ void pin_cpu(int cpu){
     	sched_setaffinity(0, sizeof(set), &set);
 }
 
+void *shm_init(int is_writer, shm_region **shm_out) {
+	int fd=shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+    	if(fd<0){
+		perror("shm_open");
+		exit(1); 
+	}
+	
+	size_t total_size = sizeof(shm_region)+MAX_SIZE;
+    	ftruncate(fd, total_size);
+
+    	void *addr=mmap(NULL,total_size,PROT_READ | PROT_WRITE,MAP_SHARED, fd, 0);
+	if(addr==MAP_FAILED){
+		perror("mmap"); 
+		exit(1); 
+	}
+
+    	*shm_out = (shm_region *)addr;
+    	return addr;
+}
+
+void shm_cleanup(int is_writer, shm_region *shm, void *addr, size_t total_size) {
+	munmap(addr, total_size);
+    	if(is_writer)
+		shm_unlink(SHM_NAME);
+}
+
+void shm_send_signal(shm_region *shm) {
+    	shm->ready = 1;
+}
+
+void shm_wait_done(shm_region *shm) {
+    	while(!shm->done);
+    	shm->done = 0;
+}
+
+void shm_wait_ready(shm_region *shm) {
+    	while(!shm->ready);
+    	shm->ready = 0;
+}
+
+void shm_signal_done(shm_region *shm) {
+	shm->done = 1;
+}
+
