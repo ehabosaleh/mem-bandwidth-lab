@@ -44,7 +44,7 @@ int main(int argc, char **argv){
 		exit(1);
 	}
 	if(pid==0){
-		execl("./shm_mem_bench","--is_writer=0",reader_core_arg,NULL);
+		execl("./shm_mem_bench","shm_mem_bench","--is_writer=0",reader_core_arg,NULL);
 		perror("child–execl");
 		exit(1);
 	}
