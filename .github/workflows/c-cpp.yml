@@ -33,15 +33,15 @@ jobs:
       - name: Pipe Benchmark
         run: |
           if [ -x ./bin/pipe_bw ]; then
-            ./bin/pipe_bw --max-bytes=10MiB
+            ./bin/pipe_bw --max-bytes=1MiB
           fi
       - name: Message Queue Benchmark
         run: |
           if [ -x ./bin/mq_bw ]; then
-            ./bin/mq_bw --max-bytes=10MiB || true
+            ./bin/mq_bw --max-bytes=1MiB || true
           fi
       - name: Shared Memory Benchmark
         run: |
           if [ -x ./bin/shm_mem ]; then
-            ./bin/shm_mem --min-bytes=100kib --max-bytes=10MiB --reader_core=0 --writer_core=1 --is_writer=1 || true
+            ./bin/shm_mem --min-bytes=1 --max-bytes=100MiB --reader_core=0 --writer_core=1 --is_writer=1 || true
           fi
