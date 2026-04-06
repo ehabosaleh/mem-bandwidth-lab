@@ -35,8 +35,8 @@ int main(int argc, char **argv){
     	shm_region *shm;
     	void *addr = shm_init(is_writer, &shm);
 	pid_t pid;
-	char* reader_core_arg=NULL;
-	snprintf(reader_core_arg, 16, "--reader_core=%d",reader_core);
+	char reader_core_arg[32];
+	snprintf(reader_core_arg,sizeof(reader_core_arg), "--reader_core=%d",reader_core);
 
 	pid=fork();
 	if(pid<0){
