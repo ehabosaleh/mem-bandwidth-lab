@@ -91,3 +91,43 @@ void shm_signal_done(shm_region *shm) {
 	shm->done = 1;
 }
 
+void shm_memcpy_write(shm_region *shm, const void *src, size_t size){
+	memcpy(shm->buffer,src,size);
+}
+
+void shm_memcpy_read(shm_region *shm, const void *dst, size_t size){
+        memcpy(shm->buffer,dst,size);
+
+}
+
+void run_writer(shm_region *shm, int warmup, int iters){
+	pin_cpu(0);
+	char *src=align_alloc(64,MAX_SIZE);
+	memset(src,0xAB,MAX_SIZE);
+	printf("#Size\tLatency(us)\tBandwidth(GB/s)\n");
+	
+	for(size_t size=1;size<=MAX_SIZE;size*=2){
+		shm->size=size;
+		
+		for(int i=0;i<warmup;i++){
+            		shm_memcpy_write(shm,src, size)
+			shm_send_signal(shm);
+            		shm_wait_done(shm);
+		}
+		
+		double start=now_sec();
+        	for(int i=0;i<ITERS;i++) {
+            		shm_memcpy_write(shm,src,size);
+            		shm_send_signal(shm);
+            		shm_wait_done(shm);
+        	}
+        	double end=now_sec();
+		
+		double t=(end-start)/ITERS;
+        	double latency=t/2.0;
+        	double bw=(double)size/latency/1e9;
+
+        	printf("%zu\t%.3f\t%.3f\n",size,latency*1e6, bw);
+	}
+}
+
