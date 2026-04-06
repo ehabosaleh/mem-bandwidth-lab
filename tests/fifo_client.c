@@ -59,7 +59,7 @@ int main(int argc,char**argv){
         double rtt=t1/iters;
         double one_way=rtt/2.0;
         
-        printf("%-12llu %-12.3f %-12.3f\n",size, one_way*1e6, (size/one_way)/(1024.0*1024.0));
+        printf("%-12lu %-12.3f %-12.3f\n",size, one_way*1e6, (size/one_way)/(1024.0*1024.0));
         free(buf);
     }
     close(rfd);
