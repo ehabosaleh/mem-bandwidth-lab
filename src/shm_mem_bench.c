@@ -47,22 +47,38 @@ void pin_cpu(int cpu){
     	sched_setaffinity(0, sizeof(set), &set);
 }
 
-void *shm_init(int is_writer, shm_region **shm_out) {
-	int fd=shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
-    	if(fd<0){
-		perror("shm_open");
-		exit(1); 
-	}
-	size_t total_size = sizeof(shm_region)+MAX_SIZE;
-	if(is_writer){
-    		ftruncate(fd, total_size);
-	}
+void *shm_init(int is_writer, shm_region **shm_out){
+	int fd;
 
-    	void *addr=mmap(NULL,total_size,PROT_READ | PROT_WRITE,MAP_SHARED, fd, 0);
-	if(addr==MAP_FAILED){
-		perror("mmap"); 
-		exit(1); 
-	}
+    	if (is_writer) {
+        	fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
+        	if (fd < 0) {
+            		perror("shm_open (writer)");
+            		exit(1);
+        	}
+
+        	size_t total_size = sizeof(shm_region) + MAX_SIZE;
+        	if(ftruncate(fd, total_size) != 0) {
+            		perror("ftruncate");
+            		exit(1);
+        	}
+
+    	}else{
+        	fd = shm_open(SHM_NAME, O_RDWR, 0666);
+        	if (fd < 0) {
+            		perror("shm_open (reader)");
+            		exit(1);
+        	}
+    	}
+
+    	size_t total_size = sizeof(shm_region) + MAX_SIZE;
+
+    	void *addr=mmap(NULL, total_size, PROT_READ | PROT_WRITE,MAP_SHARED, fd, 0);
+
+    	if(addr == MAP_FAILED) {
+        	perror("mmap");
+        	exit(1);
+    	}
 
     	*shm_out = (shm_region *)addr;
     	return addr;
@@ -105,6 +121,8 @@ void run_writer(shm_region *shm, int core, int warmup, int iters){
 	pin_cpu(core);
 	char *src=aligned_alloc(64,MAX_SIZE);
 	memset(src,0xAB,MAX_SIZE);
+	while (!shm->initialized);
+	
 	printf("#Size\tLatency(us)\tBandwidth(GB/s)\n");
 	
 	for(size_t size=1;size<=MAX_SIZE;size*=2){
@@ -135,7 +153,7 @@ void run_writer(shm_region *shm, int core, int warmup, int iters){
 void run_reader(shm_region *shm,int core){
 	pin_cpu(core);
 	char *dst=aligned_alloc(64, MAX_SIZE);
-    	
+	shm->initialized = 1;   	
 	while(1){
         	shm_wait_ready(shm);
 
