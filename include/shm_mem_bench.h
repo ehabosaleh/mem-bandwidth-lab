@@ -12,7 +12,7 @@ typedef struct{
     	volatile int done;
     	volatile int initialized;
 	size_t size;
-    	char *buffer;
+    	char buffer[];
 } shm_region;
 
 
