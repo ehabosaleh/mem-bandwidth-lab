@@ -7,11 +7,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
+      matrix:
+        compiler: [gcc]
+        build_type: [Release]
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
 
       - name: Configure (CMake)
         env:
@@ -21,20 +28,10 @@ jobs:
 
       - name: Build
         run: |
-          cmake --build build-ci --config ${{ matrix.build_type }}
+          cmake --build build-ci
 
       - name: Pipe Benchmark
         run: |
-          if [ -x ./bin/pipe_bw ]; then
-            ./bin/pipe_bw --max-bytes=100MiB || true
-          fi
-      - name: Message Queue Benchmark
-        run: |
-          if [ -x ./bin/mq_bw ]; then
-            ./bin/mq_bw --max-bytes=100MiB || true
-          fi
-      - name: Shared Memory
-        run: |
-          if [ -x ./bin/shm_mem ]; then
-            ./bin/shm_mem --min-bytes=1 --max-bytes=100MiB --reader_core=0 --writer_core=1 --is_writer=1 || true
+          if [ -x ./build-ci/bin/pipe_bw ]; then
+            ./build-ci/bin/pipe_bw --max-bytes=100MiB
           fi
