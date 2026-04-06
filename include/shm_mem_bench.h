@@ -10,7 +10,8 @@
 typedef struct{
 	volatile int ready;
     	volatile int done;
-    	size_t size;
+    	volatile int initialized;
+	size_t size;
     	char *buffer;
 } shm_region;
 
