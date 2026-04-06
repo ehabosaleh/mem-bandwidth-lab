@@ -3,10 +3,10 @@
 
 void usage(const char *argv0){
 	fprintf(stderr,
-           "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N]\n"
+           "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N] [--reader_core=N] [--writer_core=N] [--is_writer=1/0]\n"
            "Examples:\n"
-           "  %s --max-bytes=64KiB \n"
-           "  %s --min-bytes=0 --max-bytes=1GiB \n",
+           "  %s --min-bytes=0 --max-bytes=1GiB --reder_core=5 --writer_core=22 --is_writer=1\n"
+           "  %s --min-bytes=0 --max-bytes=1GiB --reder_core=0 --writer_core=1 --is_writer=1 \n",
            argv0, argv0, argv0);
 	exit(EXIT_FAILURE);
 }
