@@ -13,8 +13,8 @@ int main(int argc, char **argv){
         	else if(strncmp(argv[i], "--max-bytes=", 12) == 0) max_bytes = parse_size(argv[i] + 12);
         	else if(strncmp(argv[i], "--iters=", 8) == 0) iters = atoi(argv[i]+8);
         	else if(strncmp(argv[i], "--warmup=", 9) == 0) warmup = atoi(argv[i]+9);
-		else if(strncmp(argv[i],"--reader_core=", 11)==0) reader_core=atoi(argv[i]+11);
-		else if(strncmp(argv[i],"--writer_core=", 11)==0) writer_core=atoi(argv[i]+11);
+		else if(strncmp(argv[i],"--reader_core=", 14)==0) reader_core=atoi(argv[i]+14);
+		else if(strncmp(argv[i],"--writer_core=", 14)==0) writer_core=atoi(argv[i]+14);
         	else if(strncmp(argv[i],"--is_writer=",12 )==0) is_writer=atoi(argv[i]+12);
 		else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             		usage(argv[0]);
