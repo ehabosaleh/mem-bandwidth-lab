@@ -28,10 +28,21 @@ jobs:
 
       - name: Build
         run: |
-          cmake --build build-ci
+          cmake --build build
 
       - name: Pipe Benchmark
         run: |
           if [ -x ./build-ci/bin/pipe_bw ]; then
-            ./build-ci/bin/pipe_bw --max-bytes=100MiB
+            ./bin/pipe_bw --max-bytes=100MiB
+            ./
+          fi
+      - name: Message Queue Benchmark
+        run: |
+          if [ -x ./bin/mq_bw ]; then
+            ./bin/mq_bw --max-bytes=100MiB || true
+          fi
+      - name: Message Queue Benchmark
+        run: |
+          if [ -x ./bin/shm_mem ]; then
+            ./bin/shm_mem --min-bytes=100kib --max-bytes=100MiB --reader_core=0 --writer_core=1 --is_writer=1 || true
           fi
