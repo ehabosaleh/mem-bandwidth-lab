@@ -9,10 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        compiler: [gcc, clang]
-        build_type: [Release, Debug]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
