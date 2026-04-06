@@ -143,9 +143,9 @@ void run_writer(shm_region *shm, int core, int warmup, int iters,size_t min_byte
 		
 		double t=(end-start)/iters;
         	double latency=t/2.0;
-        	double bw=(double)size/latency/1e9;
+        	double bw=(double)size/latency/1e6;
 
-        	printf("%zu\t%.3f\t%.3f\n",size,latency*1e6, bw);
+        	printf("%-20zu%-20.3f%-20.3f\n",size,latency*1e6, bw);
 	}
 }
 

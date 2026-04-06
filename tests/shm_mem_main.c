@@ -49,7 +49,7 @@ int main(int argc, char **argv){
 		exit(1);
 	}
 	
-        run_writer(shm,writer_core,warmup,iters);
+        run_writer(shm,writer_core,warmup,iters,min_bytes,max_bytes);
     	shm_cleanup(is_writer,shm,addr,sizeof(shm_region)+MAX_SIZE);
     	return 0;
 }
