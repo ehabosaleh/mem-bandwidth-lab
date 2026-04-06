@@ -11,6 +11,7 @@ typedef struct{
 	volatile int ready;
     	volatile int done;
     	volatile int initialized;
+	volatile int terminate;
 	size_t size;
     	char buffer[];
 } shm_region;
