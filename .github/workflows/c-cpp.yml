@@ -37,3 +37,8 @@ jobs:
           if [ -x ./bin/mq_bw ]; then
             ./bin/mq_bw --max-bytes=100MiB || true
           fi
+      - name: Shared Memory
+        run: |
+          if [ -x ./bin/shm_mem ]; then
+            ./bin/shm_mem --min-bytes=1 --max-bytes=100MiB --reader_core=0 --writer_core=1 --is_writer=1 || true
+          fi
