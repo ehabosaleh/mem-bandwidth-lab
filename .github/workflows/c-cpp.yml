@@ -34,7 +34,6 @@ jobs:
         run: |
           if [ -x ./bin/pipe_bw ]; then
             ./bin/pipe_bw --max-bytes=10MiB
-            ./
           fi
       - name: Message Queue Benchmark
         run: |
