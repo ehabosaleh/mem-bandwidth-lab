@@ -24,7 +24,7 @@ jobs:
         env:
           CC: ${{ matrix.compiler }}
         run: |
-          cmake -S . -B build-ci -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
       - name: Build
         run: |
@@ -32,7 +32,7 @@ jobs:
 
       - name: Pipe Benchmark
         run: |
-          if [ -x ./build-ci/bin/pipe_bw ]; then
+          if [ -x ./bin/pipe_bw ]; then
             ./bin/pipe_bw --max-bytes=100MiB
             ./
           fi
@@ -41,7 +41,7 @@ jobs:
           if [ -x ./bin/mq_bw ]; then
             ./bin/mq_bw --max-bytes=100MiB || true
           fi
-      - name: Message Queue Benchmark
+      - name: Shared Memory Benchmark
         run: |
           if [ -x ./bin/shm_mem ]; then
             ./bin/shm_mem --min-bytes=100kib --max-bytes=100MiB --reader_core=0 --writer_core=1 --is_writer=1 || true
