@@ -1,7 +1,7 @@
-#include"../include/shm_mem.h"
+#include"../include/shm_mem_bench.h"
 
 
-void usage(const char *argv0) 
+void usage(const char *argv0){
 	fprintf(stderr,
            "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N]\n"
            "Examples:\n"
@@ -53,9 +53,10 @@ void *shm_init(int is_writer, shm_region **shm_out) {
 		perror("shm_open");
 		exit(1); 
 	}
-	
 	size_t total_size = sizeof(shm_region)+MAX_SIZE;
-    	ftruncate(fd, total_size);
+	if(is_writer){
+    		ftruncate(fd, total_size);
+	}
 
     	void *addr=mmap(NULL,total_size,PROT_READ | PROT_WRITE,MAP_SHARED, fd, 0);
 	if(addr==MAP_FAILED){
@@ -95,14 +96,14 @@ void shm_memcpy_write(shm_region *shm, const void *src, size_t size){
 	memcpy(shm->buffer,src,size);
 }
 
-void shm_memcpy_read(shm_region *shm, const void *dst, size_t size){
-        memcpy(shm->buffer,dst,size);
+void shm_memcpy_read(shm_region *shm, void *dst, size_t size){
+        memcpy(dst,shm->buffer,size);
 
 }
 
-void run_writer(shm_region *shm, int warmup, int iters){
-	pin_cpu(0);
-	char *src=align_alloc(64,MAX_SIZE);
+void run_writer(shm_region *shm, int core, int warmup, int iters){
+	pin_cpu(core);
+	char *src=aligned_alloc(64,MAX_SIZE);
 	memset(src,0xAB,MAX_SIZE);
 	printf("#Size\tLatency(us)\tBandwidth(GB/s)\n");
 	
@@ -110,20 +111,20 @@ void run_writer(shm_region *shm, int warmup, int iters){
 		shm->size=size;
 		
 		for(int i=0;i<warmup;i++){
-            		shm_memcpy_write(shm,src, size)
+            		shm_memcpy_write(shm,src, size);
 			shm_send_signal(shm);
             		shm_wait_done(shm);
 		}
 		
 		double start=now_sec();
-        	for(int i=0;i<ITERS;i++) {
+        	for(int i=0;i<iters;i++) {
             		shm_memcpy_write(shm,src,size);
             		shm_send_signal(shm);
             		shm_wait_done(shm);
         	}
         	double end=now_sec();
 		
-		double t=(end-start)/ITERS;
+		double t=(end-start)/iters;
         	double latency=t/2.0;
         	double bw=(double)size/latency/1e9;
 
@@ -131,3 +132,15 @@ void run_writer(shm_region *shm, int warmup, int iters){
 	}
 }
 
+void run_reader(shm_region *shm,int core){
+	pin_cpu(core);
+	char *dst=aligned_alloc(64, MAX_SIZE);
+    	
+	while(1){
+        	shm_wait_ready(shm);
+
+        	size_t size = shm->size;
+        	shm_memcpy_read(shm, dst, size);
+        	shm_signal_done(shm);
+    	}
+}
