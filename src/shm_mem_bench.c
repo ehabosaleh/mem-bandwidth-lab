@@ -124,7 +124,6 @@ void run_writer(shm_region *shm, int core, int warmup, int iters,size_t min_byte
 	char *src=aligned_alloc(64,MAX_SIZE);
 	memset(src,0xAB,MAX_SIZE);
 	while (!shm->initialized);
-	shm->terminate=0;
 	
 	printf("%-20s %-20s %-20s\n","Bytes","Latency(us)","Bandwidth(MiB/s)");	
 	for(size_t size=min_bytes;size<=max_bytes;size*=2){
@@ -150,6 +149,7 @@ void run_writer(shm_region *shm, int core, int warmup, int iters,size_t min_byte
 
         	printf("%-20zu%-20.3f%-20.3f\n",size,latency*1e6, bw);
 	}
+	shm_send_signal(shm);
 	shm->terminate=1;
 }
 
@@ -158,9 +158,9 @@ void run_reader(shm_region *shm,int core){
 	char *dst=aligned_alloc(64, MAX_SIZE);
 	shm->initialized = 1;   	
 	shm->terminate= 0;
-	while(!shm->terminate){
+	while(1){
         	shm_wait_ready(shm);
-
+		if(shm->terminate) break;
         	size_t size = shm->size;
         	shm_memcpy_read(shm, dst, size);
         	shm_signal_done(shm);
