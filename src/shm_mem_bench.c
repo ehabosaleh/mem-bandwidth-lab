@@ -5,8 +5,8 @@ void usage(const char *argv0){
 	fprintf(stderr,
            "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N] [--reader_core=N] [--writer_core=N] [--is_writer=1/0]\n"
            "Examples:\n"
-           "  %s --min-bytes=0 --max-bytes=1GiB --reader_core=5 --writer_core=22 --is_writer=1\n"
-           "  %s --min-bytes=0 --max-bytes=1GiB --reader_core=0 --writer_core=1 --is_writer=1 \n",
+           "  %s --min-bytes=1 --max-bytes=4MiB --reader_core=1 --writer_core=2 --is_writer=1\n"
+           "  %s --min-bytes=1 --max-bytes=4MiB --reader_core=0 --writer_core=0 --is_writer=1 \n",
            argv0, argv0, argv0);
 	exit(EXIT_FAILURE);
 }
