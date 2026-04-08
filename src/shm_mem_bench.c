@@ -95,12 +95,14 @@ void shm_send_signal(shm_region *shm) {
 }
 
 void shm_wait_done(shm_region *shm) {
-    	while(!shm->done);
+    	while(!shm->done)
+		sched_yield();
     	shm->done = 0;
 }
 
 void shm_wait_ready(shm_region *shm) {
-    	while(!shm->ready);
+    	while(!shm->ready)
+		sched_yield();
     	shm->ready = 0;
 }
 
