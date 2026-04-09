@@ -6,8 +6,7 @@ The following IPC mechanisms are evaluated:
 
 1. POSIX Pipes (pipe())
 2. POSIX Named Pipes (FIFOs)
-3. POSIX Message Queues:
-   * TODO: Fragment large messages
+3. POSIX Message Queues
 5. POSIX Shared Memeory
 6. TODO: TCP/IP Sockets
 
