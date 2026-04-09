@@ -3,22 +3,33 @@ mqd_t mq_p2c;
 mqd_t mq_c2p;
 
 void send_all(mqd_t mq, const void *buf, size_t size){
-	if(mq_send(mq,buf,size,0)==-1){
-        	perror("Message Queue: Send");
-        	exit(EXIT_FAILURE);
-    	}
+	struct mq_attr attr;
+	mq_getattr(mq, &attr);
+	size_t chunk=attr.mq_msgsize;
+	for(size_t offset=0;offset<size;offset+=chunk){
+		size_t n=(size-offset<chunk)?size-offset:chunk;
+		if(mq_send(mq,buf+offset,n,0)==-1){
+        		perror("Message Queue: Send");
+        		exit(EXIT_FAILURE);
+    		}
+	}
 }
 
 void recv_all(mqd_t mq, void*buf,size_t size){
 	struct mq_attr attr;
     	mq_getattr(mq, &attr);
-    
-    	ssize_t ret=mq_receive(mq,buf,attr.mq_msgsize,NULL);
-    	if(ret<0){
-        	perror("Message Queue: Recv");
-        	exit(EXIT_FAILURE);
-    	}
-
+	size_t chunk=attr.mq_msgsize;
+	size_t received=0;
+	ssize_t ret=0;
+    	for(size_t received=0;received<size;received+=ret){
+		
+		ret=mq_receive(mq,buf+received,chunk,NULL);
+    		if(ret<0){
+        		perror("Message Queue: Recv");
+        		exit(EXIT_FAILURE);
+    		}
+		
+	}
 }
 void child_loop(void){
     for(;;){
@@ -54,16 +65,16 @@ void child_loop(void){
 double measure_latency_one(size_t msg_size, int iters, int warmup){
 	unsigned char op='L';
     	uint64_t size=msg_size;
-   	 unsigned char ack;
+   	unsigned char ack;
     	unsigned char*buf=malloc(size);
-
     	for(int i=0;i<warmup;i++){  
         	send_all(mq_p2c,&op,1);
         	send_all(mq_p2c,&size,sizeof(size));
         	recv_all(mq_c2p,&ack,1);
 
 		if(buf==NULL){
-            		perror("Warm-up: malloc");
+			printf("%ld",size);
+            		perror("Warm-up");
             		exit(EXIT_FAILURE);
         	}
 	
@@ -75,7 +86,7 @@ double measure_latency_one(size_t msg_size, int iters, int warmup){
 	for(int i=0;i<iters;i++){
         	unsigned char*buf=malloc(size);
         	if(buf==NULL){
-               		perror("Warm-up: malloc");
+               		perror("Warm-up");
                		exit(EXIT_FAILURE);
            	}
 
