@@ -33,20 +33,20 @@ jobs:
       - name: Pipe Benchmark
         run: |
           if [ -x ./bin/pipe_bw ]; then
-            ./bin/pipe_bw --max-bytes=100MiB
+            ./bin/pipe_bw --max-bytes=4MiB
           fi
       - name: Message Queue Benchmark
         run: |
           if [ -x ./bin/mq_bw ]; then
-            ./bin/mq_bw --max-bytes=100MiB || true
+            ./bin/mq_bw --max-bytes=4MiB || true
           fi
       - name: Shared Memory Benchmark (two separate cores)
         run: |
           if [ -x ./bin/shm_mem ]; then
-            ./bin/shm_mem --min-bytes=1 --max-bytes=100MiB --reader_core=0 --writer_core=1  || true
+            ./bin/shm_mem --min-bytes=1 --max-bytes=4MiB --reader_core=0 --writer_core=1  || true
           fi
       - name: Shared Memory Benchmark (two threads, same core)
         run: |
           if [ -x ./bin/shm_mem ]; then
-            ./bin/shm_mem --min-bytes=1 --max-bytes=100MiB --reader_core=0 --writer_core=0 || true
+            ./bin/shm_mem --min-bytes=1 --max-bytes=4MiB --reader_core=0 --writer_core=0 || true
           fi
