@@ -9,5 +9,6 @@ The following IPC mechanisms are evaluated:
 3. POSIX Message Queues
 5. POSIX Shared Memeory
 6. TODO: TCP/IP Sockets
+7. TODO: DMA verbs
 
 All benchmarks use a ping-pong methodology to derive latency and bandwidth.
