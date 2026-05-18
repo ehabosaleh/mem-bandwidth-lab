@@ -81,6 +81,11 @@ void *shm_init(int is_writer, shm_region **shm_out){
     	}
 	
 	memset(addr,0,total_size);
+	if(mlock(addr,total_size)!=0){
+		perror("mlcok");
+		munmap(addr,total_size);
+		exit(1);
+	}
 
     	*shm_out = (shm_region *)addr;
     	return addr;
