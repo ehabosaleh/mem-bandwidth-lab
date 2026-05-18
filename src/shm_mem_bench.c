@@ -74,11 +74,13 @@ void *shm_init(int is_writer, shm_region **shm_out){
     	size_t total_size = sizeof(shm_region) + MAX_SIZE;
 
     	void *addr=mmap(NULL, total_size, PROT_READ | PROT_WRITE,MAP_SHARED, fd, 0);
-
-    	if(addr == MAP_FAILED) {
+    	
+	if(addr == MAP_FAILED) {
         	perror("mmap");
         	exit(1);
     	}
+	
+	memset(addr,0,total_size);
 
     	*shm_out = (shm_region *)addr;
     	return addr;
