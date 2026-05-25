@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include "../include/error_functions.h"
 #include "../include/tlpi_hdr.h"
-#include "../include/ename.c.inc"          /* Defines ename and MAX_ENAME */
+#include "../include/ename.c.inc"         
 
 #ifdef __GNUC__
 __attribute__ ((__noreturn__))
@@ -44,9 +44,9 @@ static void outputError(Boolean useErr, int err, Boolean flushStdout, const char
 #endif
 
     if (flushStdout)
-        fflush(stdout);       /* Flush any pending stdout */
+        fflush(stdout);       
     fputs(buf, stderr);
-    fflush(stderr);           /* In case stderr is not line-buffered */
+    fflush(stderr);           
 }
 
 
@@ -55,7 +55,7 @@ void errMsg(const char *format, ...)
     va_list argList;
     int savedErrno;
 
-    savedErrno = errno;       /* In case we change it here */
+    savedErrno = errno;      
 
     va_start(argList, format);
     outputError(TRUE, errno, TRUE, format, argList);
@@ -100,8 +100,6 @@ void errExitEN(int errnum, const char *format, ...)
     terminate(TRUE);
 }
 
-/* Print an error message (without an 'errno' diagnostic) */
-
 void fatal(const char *format, ...)
 {
     va_list argList;
@@ -113,20 +111,18 @@ void fatal(const char *format, ...)
     terminate(TRUE);
 }
 
-/* Print a command usage error message and terminate the process */
-
 void usageErr(const char *format, ...)
 {
     va_list argList;
 
-    fflush(stdout);           /* Flush any pending stdout */
+    fflush(stdout);           
 
     fprintf(stderr, "Usage: ");
     va_start(argList, format);
     vfprintf(stderr, format, argList);
     va_end(argList);
 
-    fflush(stderr);           /* In case stderr is not line-buffered */
+    fflush(stderr);          
     exit(EXIT_FAILURE);
 }
 
@@ -135,14 +131,14 @@ void cmdLineErr(const char *format, ...)
 {
     va_list argList;
 
-    fflush(stdout);           /* Flush any pending stdout */
+    fflush(stdout);          
 
     fprintf(stderr, "Command-line usage error: ");
     va_start(argList, format);
     vfprintf(stderr, format, argList);
     va_end(argList);
 
-    fflush(stderr);           /* In case stderr is not line-buffered */
+    fflush(stderr);          
     exit(EXIT_FAILURE);
 }
 
