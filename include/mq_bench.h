@@ -18,8 +18,6 @@ extern mqd_t mq_c2p;
 void send_all(mqd_t mq, const void *buf, size_t size);
 void recv_all(mqd_t mq, void *buf, size_t size);
 
-void usage(const char *argv0);
-size_t parse_size(const char* s);
 
 void child_loop(void);
 double measure_latency_one(size_t msg_size, int iters,int warmup);
