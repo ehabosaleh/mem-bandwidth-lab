@@ -14,8 +14,6 @@ size_t print_buf_size(int fd);
 void set_buf_size(int fd,size_t size);
 void write_all(int fd, const void*buff,size_t n);
 void read_all(int fd,void*buff,size_t n);
-void usage(const char *argv0);
-size_t parse_size(const char* s);
 void child_loop(int rfd, int wfd);
 double measure_latency_one(size_t msg_bytes, int iters, int warmup, int p2c_w, int c2p_r, int p2c_r, int c2p_w);
 #endif
