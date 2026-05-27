@@ -19,6 +19,7 @@
 #include<sys/wait.h>
 #include<mqueue.h>
 #include <sched.h> // CPU cores affinity
+#include<sys/socket.h>
 
 __attribute__((always_inline)) static inline double now_sec(void){
      struct timespec ts;
@@ -29,5 +30,6 @@ __attribute__((always_inline)) static inline double now_sec(void){
 
      return (double)ts.tv_sec+(double)ts.tv_nsec*1e-9;
  }
-
+extern size_t parse_size(const char* s);
+extern void usage(const char *argv0);
 #endif
