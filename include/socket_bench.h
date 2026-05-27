@@ -37,6 +37,7 @@ inline int validate_domain(int domain){
 		return 0
 }
 
+int unix_addr_init(const char*path, struct sockaddr_un*addr);
 
 int server_init(const socket_config_t*cfg,const*path,const int type);
 int client_init(const socket_config_t*cfg,const*path,const int type);
