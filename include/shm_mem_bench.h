@@ -17,8 +17,6 @@ typedef struct{
 } shm_region;
 
 
-void usage(const char *argv0);
-size_t parse_size(const char* s);
 void pin_cpu(int cpu);
 
 void *shm_init(int is_writer, shm_region **shm_out);
