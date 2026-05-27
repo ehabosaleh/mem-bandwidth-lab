@@ -2,6 +2,7 @@
 #define SOCKET_BENCH_H
 
 #include"mem_bench.h"
+#define PATH /tmp/socket
 
 typedef struct{
 	int type;
@@ -14,26 +15,36 @@ typedef struct{
 typedef struct {
 	int domain;
 	int type;
-	int fd;
 	int listen_fd;
 	int peer_fd;
-	int sv[2];
 	char*path[108];
 	int is_server;
 	int initialized;
-	int use_socketpair;
 }socket_struct_t;
 
 extern socket_struct_t global_socket;
 
-int socketpair_init(int type);
-int server_init(const socket_config_t*cfg);
-int client_init(const socket_config_T*cfg);
+inline int validate_type(int type){
+	if(type!=SOCK_STREAM||type!=SOCK_DRAM||type!=SOCK_SEQPACKET)
+		return 1;
+	else
+		return 0;
+}
+inline int validate_domain(int domain){
+	if(domain!=AF_UNIX||domain!=AF_LOCAL,||domain!=AF_NET16)
+		return 1;
+	else
+		return 0
+}
 
-void read_all(int fd,char*buffer,size_t size);
-void write_all(int fd, const char*buffer,size_t size);
+
+int server_init(const socket_config_t*cfg,const*path,const int type);
+int client_init(const socket_config_t*cfg,const*path,const int type);
+
+ssize_t read_all(int fd,char*buffer,size_t size);
+ssize_t write_all(int fd, const char*buffer,size_t size);
 
 
-void socket_cleanup(void);
+void socket_cleanup(socket_config_t *cfg);
 
 #endif
