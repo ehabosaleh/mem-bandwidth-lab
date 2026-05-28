@@ -1,6 +1,6 @@
 #include"../include/socket_bench.h"
 
-#define UNIX_SOCKET_PATH "/tmp/unix_socket"
+
 
 int main(int argc, char **argv){
     size_t min_bytes = 1;
@@ -9,7 +9,7 @@ int main(int argc, char **argv){
     int warmup = 100;
     int domain=AF_UNIX;
     int type=SOCK_STREAM;
-
+    char *path=UNIX_SOCKET_PATH;
 
     for (int i=1;i<argc;i++) {
         if(strncmp(argv[i], "--min-bytes=", 12) == 0) min_bytes = parse_size(argv[i] + 12);
@@ -26,7 +26,9 @@ int main(int argc, char **argv){
         	}
     }
     socket_struct_t socket;
-    if(unix_client_init(&socket,UNIX_SOCKET_PATH,domain,type)!=0){
+  
+
+    if(unix_client_init(&socket,path,domain,type)!=0){
         fprintf(stderr,"Failed to initialize client socket\n"); 
         return 1;
     }
