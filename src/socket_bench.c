@@ -161,6 +161,7 @@ int unix_server_init(socket_struct_t*s,const char *path,const int domain,const i
 }
 
 int unix_client_init( socket_struct_t *s,const char*path,const int domain,const int type){
+	
 	struct sockaddr_un server_addr;
 	struct sockaddr_un client_addr;
 	char client_path[SOCKET_PATH_MAX];
@@ -232,14 +233,17 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 
 ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 	size_t total_read=0;
-
+	size_t bytes_read=0;
+	struct sockaddr_un*peer_addr=NULL;
+        socklen_t  peer_len=0;
+	
 	if(!socket||!buffer||size==0||!socket->initialized){
 		errno=EINVAL;
 		return -1;
 	}
 	if(socket->type==SOCK_STREAM){
 		while(total_read<size){
-			ssize_t bytes_read=read(socket->fd,buffer+total_read,size-total_read);
+			bytes_read=read(socket->fd,buffer+total_read,size-total_read);
 			if(bytes_read<0){
 				if(errno==EINTR)
 					continue;
@@ -255,80 +259,82 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 	else if(socket->type ==SOCK_DGRAM){
 		size_t received_total=0;
 		uint32_t expected_msg_id=0;
-        uint32_t expected_total_chunks=0;
-        int first_chunk=1;
+        	uint32_t expected_total_chunks=0;
+        	int first_chunk=1;
 
-        while(received_total<size) {
-            char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
+        	while(received_total<size) {
+            		char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
 
-            bytes_read=recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
+            		bytes_read=recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
 
-            if(bytes_read<0){
-                perror("recvfrom");
-               	return -1;
-            }
+            		if(bytes_read<0){
+                		perror("recvfrom");
+               			return -1;
+            		}
 
-            if ((size_t)bytes_read<sizeof(dgram_header_t)) {
-                fprintf(stderr, "Received packet too small for header\n");
-                return -1;
-            }
+            		if ((size_t)bytes_read<sizeof(dgram_header_t)) {
+                		fprintf(stderr, "Received packet too small for header\n");
+                		return -1;
+            		}
 
-            dgram_header_t header;
-            memcpy(&header, chunk_buffer, sizeof(header));
+            		dgram_header_t header;
+            		memcpy(&header, chunk_buffer, sizeof(header));
 
-            if(header.payload_size>DGRAM_CHUNK_SIZE) {
-                fprintf(stderr, "Invalid payload size\n");
-                return -1;
-            }
+            		if(header.payload_size>DGRAM_CHUNK_SIZE) {
+                		fprintf(stderr, "Invalid payload size\n");
+                		return -1;
+            		}
 
-            if((size_t)bytes_read!=sizeof(dgram_header_t) + header.payload_size){
-                fprintf(stderr, "Packet size does not match header payload size\n");
-                return -1;
-            }
+            		if((size_t)bytes_read!=sizeof(dgram_header_t) + header.payload_size){
+                		fprintf(stderr, "Packet size does not match header payload size\n");
+                		return -1;
+            		}
 
-            if(first_chunk){
-                if (header.chunk_id!= 0) {
-                    fprintf(stderr, "First received chunk is not chunk 0\n");
-                    return -1;
-                }
+            		if(first_chunk){
+                		if(header.chunk_id!= 0) {
+                    			fprintf(stderr, "First received chunk is not chunk 0\n");
+                    			return -1;
+                		}
 
-                expected_msg_id=header.msg_id;
-                expected_total_chunks=header.total_chunks;
-                first_chunk = 0;
-            }else{
-                if (header.msg_id!=expected_msg_id ||
-                    header.total_chunks!= expected_total_chunks) {
-                    fprintf(stderr,"Received chunk from another message: msg_id=%u chunk_id=%u\n",header.msg_id,header.chunk_id);
-                    return -1;
-                }
-            }
-            if (header.chunk_id >= expected_total_chunks) {
-                fprintf(stderr, "Invalid chunk_id\n");
-            	return -1;
-           	}
+                		expected_msg_id=header.msg_id;
+                		expected_total_chunks=header.total_chunks;
+                		first_chunk=0;
+            		}else{
+                		if(header.msg_id!=expected_msg_id||header.total_chunks!= expected_total_chunks) {
+                    			fprintf(stderr,"Received chunk from another message: msg_id=%u chunk_id=%u\n",header.msg_id,header.chunk_id);
+                    			return -1;
+                		}
+            		}
+            		if (header.chunk_id >= expected_total_chunks) {
+                		fprintf(stderr, "Invalid chunk_id\n");
+            			return -1;
+           		}
 
-            size_t chunk_offset=(size_t)header.chunk_id*DGRAM_CHUNK_SIZE;
+            		size_t chunk_offset=(size_t)header.chunk_id*DGRAM_CHUNK_SIZE;
 
-            if(chunk_offset+header.payload_size>size) {
-                fprintf(stderr, "Received chunk exceeds expected message size\n");
-                return -1;
-            }
+            		if(chunk_offset+header.payload_size>size) {
+                		fprintf(stderr, "Received chunk exceeds expected message size\n");
+                		return -1;
+            		}
 
-            memcpy(buffer + chunk_offset,chunk_buffer+sizeof(dgram_header_t),header.payload_size);
+            		memcpy(buffer + chunk_offset,chunk_buffer+sizeof(dgram_header_t),header.payload_size);
 
-            received_total += header.payload_size;
-        }
+            		received_total += header.payload_size;
+        	}
 
-        total_read = received_total;
-    }
+        	total_read = received_total;
+    	}
 
-    memcpy(&socket->peer_addr, &peer_addr, sizeof(peer_addr));
-    socket->peer_len = peer_len;
-    socket->has_peer = 1;
-	return total_read;
+    	memcpy(&socket->peer_addr, &peer_addr, sizeof(peer_addr));
+    	socket->peer_len = peer_len;
+    	socket->has_peer = 1;
+    	return total_read;
 }
 ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	size_t total_written=0;
+	struct sockaddr_un*peer_addr=NULL;
+        socklen_t  peer_len=0;
+	
 	if(!socket||!buffer||size==0||!socket->initialized){
 		errno=EINVAL;
 		return -1;
@@ -347,7 +353,6 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	}
 	else if(socket->type==SOCK_DGRAM){
 		ssize_t bytes_written=0;
-		struct sockaddr_un*peer_addr=NULL;
 		if(socket->has_peer){
 			peer_addr=&socket->peer_addr;
 		}
