@@ -4,17 +4,10 @@
 #include"mem_bench.h"
 #define PATH /tmp/socket
 
-typedef struct{
-	int type;
-	int domain;
-	const*path;
-	int use_socketpair;
-	struct sockaddr_un addr;
-
-} socket_config_t;
 typedef struct {
 	int domain;
 	int type;
+	int fd;
 	int listen_fd;
 	int peer_fd;
 	char*path[108];
@@ -22,7 +15,6 @@ typedef struct {
 	int initialized;
 }socket_struct_t;
 
-extern socket_struct_t global_socket;
 
 inline int validate_type(int type){
 	if(type!=SOCK_STREAM||type!=SOCK_DRAM||type!=SOCK_SEQPACKET)
@@ -39,11 +31,11 @@ inline int validate_domain(int domain){
 
 int unix_addr_init(const char*path, struct sockaddr_un*addr);
 
-int server_init(const socket_config_t*cfg,const*path,const int type);
-int client_init(const socket_config_t*cfg,const*path,const int type);
+int unix_server_init( socket_struct_t *socket,const*path,const int domain,const int type);
+int unix_client_init( socket_struct_t *socket,const*path,const int domain,const int type);
 
-ssize_t read_all(int fd,char*buffer,size_t size);
-ssize_t write_all(int fd, const char*buffer,size_t size);
+ssize_t unix_read_all(int fd,char*buffer,size_t size);
+ssize_t unnix_write_all(int fd, const char*buffer,size_t size);
 
 
 void socket_cleanup(socket_config_t *cfg);
