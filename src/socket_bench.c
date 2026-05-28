@@ -148,3 +148,82 @@ int unix_client_init( socket_struct_t *socket,const*path,const int domain,const 
 	return 0;
 }
 
+ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
+	size_t total_read=0;
+
+	if(!socket||!buffer||size==0||!socket->initialized){
+		errno=EINVAL;
+		return -1;
+	}
+	if(socket->type==SOCK_STREAM){
+		while(total_read<size){
+			ssize_t bytes_read=read(socket->fd,buffer+total_read,size-total_read);
+			if(bytes_read<0){
+				if(errno==EINTR)
+					continue;
+				else
+					return -1;
+			}
+			else if(bytes_read==0){
+				break;
+			}
+			total_read+=bytes_read;
+		}
+	}
+	else if(socket->type==SOCK_DGRAM){
+		size_t bytes_read=0;
+		do{
+			bytes_read=recv(socket->fd,buffer,size,0);
+		}while(bytes_read<0&&errno==EINTR);
+		if(bytes_read<0){
+			perror("recv");
+			return -1;
+		}
+		total_read=bytes_read;
+		
+	}
+	
+}
+ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
+	size_t total_written=0;
+	if(!socket||!buffer||size==0||!socket->initialized){
+		errno=EINVAL;
+		return -1;
+	}
+	if(socket->type==SOCK_STREAM){
+		while(total_written<size){
+			ssize_t bytes_written=write(socket->fd,buffer+total_written,size-total_written);
+			if(bytes_written<0){
+				if(errno==EINTR)
+						continue;
+				else
+					return -1;
+			}
+			total_written+=bytes_written;
+		}
+	}
+	else if(socket->type==SOCK_DGRAM){
+		ssize_t bytes_written=0;
+		do{
+			bytes_written=send(socket->fd,buffer,size,0);
+		}while(bytes_written<0&&errno==EINTR);
+		if(bytes_written<0){
+			perror("send");
+			return -1;
+		}
+		total_written=bytes_written;
+	}
+	return total_written;
+}
+void socket_cleanup(socket_struct_t*socket){
+	if(!socket||!socket->initialized)
+		return;
+	if(socket->is_server&&socket->listen_fd>=0){
+		close(socket->listen_fd);
+		unlink(socket->path);
+	}
+	if(socket->fd>=0){
+		close(socket->fd);
+	}
+	socket->initialized=0;
+}
