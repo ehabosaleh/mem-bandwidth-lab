@@ -2,25 +2,25 @@
 
 int main(int argc, char **argv){
 	size_t min_bytes = 1;
-    	size_t max_bytes = 1024ULL*1024ULL;
-    	int iters = 1000;
-    	int warmup = 100;
+    size_t max_bytes = 1024ULL*1024ULL;
+    int iters = 1000;
+    int warmup = 100;
 	int writer_core=0,reader_core=1;
 	bool is_writer=1;
 
-    	for (int i=1;i<argc;i++) {
-        	if(strncmp(argv[i], "--min-bytes=", 12) == 0) min_bytes = parse_size(argv[i] + 12);
-        	else if(strncmp(argv[i], "--max-bytes=", 12) == 0) max_bytes = parse_size(argv[i] + 12);
-        	else if(strncmp(argv[i], "--iters=", 8) == 0) iters = atoi(argv[i]+8);
-        	else if(strncmp(argv[i], "--warmup=", 9) == 0) warmup = atoi(argv[i]+9);
+    for (int i=1;i<argc;i++) {
+        if(strncmp(argv[i], "--min-bytes=", 12) == 0) min_bytes = parse_size(argv[i] + 12);
+        else if(strncmp(argv[i], "--max-bytes=", 12) == 0) max_bytes = parse_size(argv[i] + 12);
+        else if(strncmp(argv[i], "--iters=", 8) == 0) iters = atoi(argv[i]+8);
+        else if(strncmp(argv[i], "--warmup=", 9) == 0) warmup = atoi(argv[i]+9);
 		else if(strncmp(argv[i],"--reader_core=", 14)==0) reader_core=atoi(argv[i]+14);
 		else if(strncmp(argv[i],"--writer_core=", 14)==0) writer_core=atoi(argv[i]+14);
-        	else if(strncmp(argv[i],"--is_writer=",12 )==0) is_writer=(atoi(argv[i]+12)!=0);
+        else if(strncmp(argv[i],"--is_writer=",12 )==0) is_writer=(atoi(argv[i]+12)!=0);
 		else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-            		usage(argv[0]);
-        	}else{
-            		fprintf(stderr, "Unknown arg: %s\n", argv[i]);
-            		usage(argv[0]);
+            usage(argv[0]);
+        }else{
+            	fprintf(stderr, "Unknown arg: %s\n", argv[i]);
+            	usage(argv[0]);
         	}
     	}
 	
@@ -32,8 +32,8 @@ int main(int argc, char **argv){
         	return 0;
 	}
 	
-    	shm_region *shm;
-    	void *addr = shm_init(is_writer, &shm);
+    shm_region *shm;
+    void *addr = shm_init(is_writer, &shm);
 	pid_t pid;
 	char reader_core_arg[32];
 	snprintf(reader_core_arg,sizeof(reader_core_arg), "--reader_core=%d",reader_core);
