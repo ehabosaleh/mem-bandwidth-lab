@@ -69,7 +69,7 @@ int init_unix_addr(const char*path, struct sockaddr_un*addr,int type){
 		errno=EINVAL;
 		return -1;
 	}
-	memset(addr,0,sizeof(*addr));
+	memset(addr,0,sizeof(sockaddr_un));
 	addr->su_family=type;
 	if(strlen(path)>=sizeof(addr->sun_path)){
 		errno=ENAMETOOLONG;
@@ -78,7 +78,7 @@ int init_unix_addr(const char*path, struct sockaddr_un*addr,int type){
 	strcnp(addr->sun_path,path,sizeof(addr->sun_path)-1);
 	return 0;
 }
-int unix_server_init(socket_struct_t*s,const*char path,const int domain,const int type){
+int unix_server_init(socket_struct_t*s,const char *path,const int domain,const int type){
 	struct sockaddr_un addr;
 	if(!path||!socket){
 		errno=EINVAL;
