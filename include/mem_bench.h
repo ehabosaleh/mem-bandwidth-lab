@@ -18,10 +18,10 @@
 #include<sys/stat.h>
 #include<sys/wait.h>
 #include<mqueue.h>
-#include <sched.h> 
+#include<sched.h> 
 #include<sys/socket.h>
-#include <sys/un.h>
-
+#include<sys/un.h>
+#include<stdint.h>
 __attribute__((always_inline)) static inline double now_sec(void){
      struct timespec ts;
      if(clock_gettime(CLOCK_MONOTONIC,&ts)!=0){
