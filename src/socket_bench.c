@@ -213,7 +213,7 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 
 		memset(&client_addr,0,sizeof(client_addr));
 		client_addr.sun_family=domain;
-		strncpy(client_add.sun_path,client_path,sizeof(client_addr.sun_path)-1);
+		strncpy(client_addr.sun_path,client_path,sizeof(client_addr.sun_path)-1);
 		
 		if(bind(s->fd,(struct sockaddr*)&client_addr,sizeof(client_addr))!=0){
 			perror("bind");
@@ -291,7 +291,7 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	}
 	else if(socket->type==SOCK_DGRAM){
 		ssize_t bytes_written=0;
-		struct sockaddr_un*peer_addr=NUL
+		struct sockaddr_un*peer_addr=NULL;
 		if(socket->has_peer){
 			peer_addr=&socket->peer_addr;
 		}
