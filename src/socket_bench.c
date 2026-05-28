@@ -252,42 +252,26 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 			total_read+=bytes_read;
 		}
 	}
-	else if(socket->type==SOCK_DGRAM){
-		size_t bytes_read=0;
-		struct sockaddr_un peer_addr;
-		socklen_t peer_len=sizeof(peer_addr);
-		memset(&peer_addr,0,sizeof(peer_addr));
-		if(size<=DGRAM_CHUNK_SIZE){
-			bytes_read=recvfrom(socket->fd,buffer,size,0,(struct sockaddr*)&peer_addr,&peer_len);
-			if(bytes_read<0){
-				perror("recvfrom");
-				return -1;
-			}
-			memcpy(&socket->peer_addr,&peer_addr,sizeof(peer_addr));
-			socket->peer_len=peer_len;
-			socket->has_peer=1;	
-			total_read=bytes_read;
-		}
-		else if(socket->type ==SOCK_DGRAM){
-			size_t received_total=0;
-			uint32_t expected_msg_id=0;
-        		uint32_t expected_total_chunks=0;
-        		int first_chunk=1;
+	else if(socket->type ==SOCK_DGRAM){
+		size_t received_total=0;
+		uint32_t expected_msg_id=0;
+        uint32_t expected_total_chunks=0;
+        int first_chunk=1;
 
-        		while(received_total<size) {
-            			char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
+        while(received_total<size) {
+            char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
 
-            			bytes_read=recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
+            bytes_read=recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
 
-            			if(bytes_read<0){
-                			perror("recvfrom");
-               	 			return -1;
-            			}
+            if(bytes_read<0){
+                perror("recvfrom");
+               	return -1;
+            }
 
-            			if ((size_t)bytes_read<sizeof(dgram_header_t)) {
-                			fprintf(stderr, "Received packet too small for header\n");
-                			return -1;
-            			}
+            if ((size_t)bytes_read<sizeof(dgram_header_t)) {
+                fprintf(stderr, "Received packet too small for header\n");
+                return -1;
+            }
 
             dgram_header_t header;
             memcpy(&header, chunk_buffer, sizeof(header));
@@ -297,12 +281,12 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
                 return -1;
             }
 
-            if ((size_t)bytes_read!=sizeof(dgram_header_t) + header.payload_size){
+            if((size_t)bytes_read!=sizeof(dgram_header_t) + header.payload_size){
                 fprintf(stderr, "Packet size does not match header payload size\n");
                 return -1;
             }
 
-            if (first_chunk){
+            if(first_chunk){
                 if (header.chunk_id!= 0) {
                     fprintf(stderr, "First received chunk is not chunk 0\n");
                     return -1;
@@ -311,18 +295,17 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
                 expected_msg_id=header.msg_id;
                 expected_total_chunks=header.total_chunks;
                 first_chunk = 0;
-            } else {
+            }else{
                 if (header.msg_id!=expected_msg_id ||
                     header.total_chunks!= expected_total_chunks) {
                     fprintf(stderr,"Received chunk from another message: msg_id=%u chunk_id=%u\n",header.msg_id,header.chunk_id);
                     return -1;
                 }
             }
-
             if (header.chunk_id >= expected_total_chunks) {
                 fprintf(stderr, "Invalid chunk_id\n");
-                return -1;
-            }
+            	return -1;
+           	}
 
             size_t chunk_offset=(size_t)header.chunk_id*DGRAM_CHUNK_SIZE;
 
