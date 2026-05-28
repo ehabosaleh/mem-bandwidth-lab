@@ -213,7 +213,7 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 
 		memset(&client_addr,0,sizeof(client_addr));
 		client_addr.sun_family=domain;
-		strncpy(client_addr.sun_path,client_path,sizeof(client_addr.sun_path)-1);
+		strncpy(client_add.sun_path,client_path,sizeof(client_addr.sun_path)-1);
 		
 		if(bind(s->fd,(struct sockaddr*)&client_addr,sizeof(client_addr))!=0){
 			perror("bind");
@@ -291,7 +291,7 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	}
 	else if(socket->type==SOCK_DGRAM){
 		ssize_t bytes_written=0;
-		struct sockaddr_un*peer_addr=NULL;
+		struct sockaddr_un*peer_addr=NUL
 		if(socket->has_peer){
 			peer_addr=&socket->peer_addr;
 		}
@@ -300,7 +300,39 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 			errno=EINVAL;
 			return -1;
 		}
-		bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)peer_addr,socket->peer_len);
+		if(size<=DGRAM_CHUNK_SIZE){
+			bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)peer_addr,socket->peer_len);
+			if(bytes_written<0){
+				perror("sendto");
+				return -1;
+			}
+			total_written=bytes_written;
+		}
+		else if(size>DGRAM_CHUNK_SIZE){	
+
+			size_t offset=0;
+			uint32_t total_chunks=(size+DGRAM_CHUNK_SIZE-1)/DGRAM_CHUNK_SIZE;
+			uint32_t msg_id=(uint32_t)time(NULL);
+			while(offset<size){
+				dgram_header_t header;
+				header.msg_id=msg_id;
+				header.chunk_id=offset/DGRAM_CHUNK_SIZE;
+				header.total_chunks=total_chunks;
+				header.payload_size=(size-offset)>DGRAM_CHUNK_SIZE?DGRAM_CHUNK_SIZE:(size-offset);
+
+				char chunk_buffer[sizeof(header)+DGRAM_CHUNK_SIZE];
+				memcpy(chunk_buffer,&header,sizeof(header));
+				memcpy(chunk_buffer+sizeof(header),buffer+offset,header.payload_size);
+
+				bytes_written=sendto(socket->fd,chunk_buffer,sizeof(header)+header.payload_size,0,(struct sockaddr*)peer_addr,socket->peer_len);
+				if(bytes_written<0){
+					perror("sendto");
+					return -1;
+				}
+				offset+=header.payload_size;
+				total_written+=bytes_written;
+			}
+		}
 		if(bytes_written<0){
 			perror("sendto");
 			return -1;
@@ -309,16 +341,16 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	}
 	return total_written;
 }
-void socket_cleanup(socket_struct_t*socket){
-	if(!socket||!socket->initialized)
+void socket_cleanup(socket_struct_t*s){
+	if(!s||!s->initialized)
 		return;
-	if(socket->is_server&&socket->listen_fd>=0){
-		close(socket->listen_fd);
-		unlink(socket->path);
+	if(s->fd>=0)
+		close(s->fd);
+	if(s->listen_fd>=0)
+		close(s->listen_fd);
+	if(s->is_server&&strlen(s->path)>0){
+		unlink(s->path);
 	}
-	if(socket->fd>=0){
-		close(socket->fd);
-	}
-	socket->initialized=0;
+	s->initialized=0;	
 }
 
