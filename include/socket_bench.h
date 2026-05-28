@@ -3,7 +3,8 @@
 
 #include"mem_bench.h"
 
-#define PATH /tmp/socket
+#define SOCKET_PATH_MAX 108
+
 
 typedef struct {
 	int domain;
@@ -11,7 +12,7 @@ typedef struct {
 	int fd;
 	int listen_fd;
 	int peer_fd;
-	char*path[108];
+	char path[SOCKET_PATH_MAX];
 	int is_server;
 	int initialized;
 }socket_struct_t;
@@ -32,13 +33,13 @@ inline int validate_domain(int domain){
 
 int unix_addr_init(const char*path, struct sockaddr_un*addr);
 
-int unix_server_init( socket_struct_t *socket,const*path,const int domain,const int type);
-int unix_client_init( socket_struct_t *socket,const*path,const int domain,const int type);
+int unix_server_init( socket_struct_t *socket,const char*path,const int domain,const int type);
+int unix_client_init( socket_struct_t *socket,const char*path,const int domain,const int type);
 
 ssize_t unix_read_all(int fd,char*buffer,size_t size);
-ssize_t unnix_write_all(int fd, const char*buffer,size_t size);
+ssize_t unix_write_all(int fd, const char*buffer,size_t size);
 
 
-void socket_cleanup(socket_config_t *cfg);
+void socket_cleanup(socket_struct_t *socket);
 
 #endif
