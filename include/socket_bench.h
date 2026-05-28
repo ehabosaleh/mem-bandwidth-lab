@@ -2,6 +2,7 @@
 #define SOCKET_BENCH_H
 
 #include"mem_bench.h"
+
 #define PATH /tmp/socket
 
 typedef struct {
