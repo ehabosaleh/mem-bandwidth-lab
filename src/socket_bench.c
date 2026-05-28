@@ -1,5 +1,67 @@
 #include"../include/socket_bench.h"
 
+void usage(const char *argv0){
+	fprintf(stderr,
+           "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N] [--domain=AF_UNIX/AF_INET] [--type=SOCK_STREAM/SOCK_DGRAM]\n"
+           "Examples:\n"
+           "  %s --min-bytes=1 --max-bytes=4MiB --domain=AF_UNIX --type=SOCK_DGRAM\n"
+           "  %s --min-bytes=1 --max-bytes=4MiB --domain=AF_UNIX --type=SOCK_STREAM \n",
+           argv0, argv0, argv0);
+	exit(EXIT_FAILURE);
+}
+size_t parse_size(const char* s){
+	char*end=NULL;
+      	errno=0;
+      	unsigned long long v=strtoull(s,&end,10);
+      	if (errno!=0 || end==s){
+			fprintf(stderr, "Invalid size: %s\n", s);
+           	exit(EXIT_FAILURE);
+		}
+      	unsigned long long mul=1;
+      	if(*end){
+		if(strcasecmp(end,"k")==0) mul=1000ULL;
+          	else if(strcasecmp(end,"m")==0) mul=1000ULL*1000ULL;
+          	else if(strcasecmp(end,"g")==0) mul=1000ULL*1000ULL*1000ULL;
+          	else if(strcasecmp(end,"kib")==0) mul=1024ULL;
+          	else if(strcasecmp(end,"mib")==0) mul=1024ULL*1024ULL;
+          	else if(strcasecmp(end,"gib")==0) mul=1024ULL*1024ULL*1024ULL;
+		else{
+               		fprintf(stderr, "Unknown size suffix: %s\n", end);
+               		exit(EXIT_FAILURE);
+           	}
+      }
+
+      if(mul!=0&&v>(unsigned long)SIZE_MAX/mul){
+              fprintf(stderr,"Passed size is too large\n");
+              exit(EXIT_FAILURE);
+      }
+
+      return (size_t)v*mul;
+  }
+
+int parse_string_to_domain(const char* s){
+	if(strcasecmp(s,"AF_UNIX")==0||strcasecmp(s,"AF_LOCAL")==0)
+		return AF_UNIX;
+	else if(strcasecmp(s,"AF_INET")==0)
+		return AF_INET;
+	else if(strcasecmp(s,"AF_NET16")==0)
+		return AF_NET16;
+	else{
+		fprintf(stderr, "Unknown domain: %s\n", s);
+		exit(EXIT_FAILURE);
+	}
+}
+int parse_string_to_type(const char* s){
+	if(strcasecmp(s,"SOCK_STREAM")==0)
+		return SOCK_STREAM;
+	else if(strcasecmp(s,"SOCK_DGRAM")==0)
+		return SOCK_DGRAM;
+	else{
+		fprintf(stderr, "Unknown type: %s\n", s);
+		exit(EXIT_FAILURE);
+	}
+}
+
 int init_unix_addr(const char*path, struct sockaddr_un*addr,int type){
 	if(!path||!addr){
 		errno=EINVAL;
@@ -14,8 +76,8 @@ int init_unix_addr(const char*path, struct sockaddr_un*addr,int type){
 	strcnp(addr->sun_path,path,sizeof(addr->sun_path)-1)
 	return 0;
 }
-int unix_server_init(socket_struct_t*socket,const*path,const int domain,const int type){
-	struct socketaddr_un addr;
+int unix_server_init(socket_struct_t*s,const*char path,const int domain,const int type){
+	struct sockaddr_un addr;
 	if(!path||!socket){
 		errno=EINVAL;
 		return -1;
@@ -28,75 +90,76 @@ int unix_server_init(socket_struct_t*socket,const*path,const int domain,const in
 		errno=EINVAL;
 		return -1;
 	}
-	memset(socket,0,sizeof(*socket));
+	memset(s,0,sizeof(*s));
 	
-	socket->domain=domain;
-	socket->type=type;
-	socket->is_server=1;
-	socket->listen_fd=-1;
-	socket->fd=-1;
+	s->domain=domain;
+	s->type=type;
+	s->is_server=1;
+	s->listen_fd=-1;
+	s->fd=-1;
 
-	if(strlen(socket->path)<=strlen(path)){
+	if(strlen(path)>=sizeof(s->path)){
 		errno=ENAMETOOLONG;
 		return -1;
 	}
-	strncpy(s->path,path,sizeof(s->path)-1);
 	/*	
 	if(init_unix_addr(path,&addr,type)!=0){
 		return -1;
 	}
 	*/
-	memset(&addr,0,sizeof(socketaddr_un));
-	addr->su_family=type;
+	memset(&addr,0,sizeof(addr));
+	addr.sun_family=domain;
+	strncpy(addr.sun_path,path,sizeof(addr.sun_path)-1);
 	unlink(path);
 
 	if(type==SOCK_STREAM){
-		socket->listen_fd=socket(domain,SOCK_STREAM,0);
-		if(socket->listen_fd<0){
+		s->listen_fd=socket(domain,SOCK_STREAM,0);
+		if(s->listen_fd<0){
 			perror("socket");
 			return -1;
 		}
-		if(bind(socket->listen_fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
+		if(bind(s->listen_fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
 			perror("bind");
-			close(socket->fd);
+			close(s->listen_fd);
 			return -1;
 		}
-		if(listen(socket->listen_fd<0,1)){
+		if(listen(s->listen_fd,1)!=0){
 			perror("listen");
-			close(socket->listen_fd);
+			close(s->listen_fd);
 			unlink(path);
+			return -1;
 		
 		}
-		socket->fd=accept(socket->listen_fd,NULL,NULL);
-		if(socket->fd<=0){
+		s->fd=accept(s->listen_fd,NULL,NULL);
+		if(s->fd<0){
 			perror("accept");
-			close(socket->listen_fd);
+			close(s->listen_fd);
 			unlink(path);
 			return -1;
 		}
 	
 	}
 	else if(type==SOCK_DGRAM){
-		socket->fd=socket(domain,SOCK_DGRAM,0);
-		if(socket->fd<0){
+		s->fd=socket(domain,SOCK_DGRAM,0);
+		if(s->fd<0){
 			perror("socket");
 			return -1;
 		}
-		if(bind(socket->fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
+		if(bind(s->fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
 			perror("bind");
-			close(socket->fd);
+			close(s->fd);
 			unlink(path);
-			retrurn -1;
+			return -1;
 		}
 	
 	}
-	socket->initialize=1;
+	s->initialized=1;
 	return 0;
 }
 
-int unix_client_init( socket_struct_t *socket,const*path,const int domain,const int type){
-	struct socketaddr_un server_addr;
-	if(!path||!socket){
+int unix_client_init( socket_struct_t *s,const char*path,const int domain,const int type){
+	struct sockaddr_un server_addr;
+	if(!path||!s){
 		errno=EINVAL;
 		return -1;
 	}
@@ -108,43 +171,44 @@ int unix_client_init( socket_struct_t *socket,const*path,const int domain,const 
 		errno=EINVAL;
 		return -1;
 	}
-	memset(socket,0,sizeof(*socket));
-	socket->domain=domain;
-	socket->type=type;
-	socket->is_server=0;
-	socket->listen_fd=-1;
-	socket->fd=-1;	
+	memset(s,0,sizeof(*s));
+	s->domain=domain;
+	s->type=type;
+	s->is_server=0;
+	s->listen_fd=-1;
+	s->fd=-1;	
 
-	if(strlen(socket->path)<=strlen(path)){
+	if(strlen(path)>=sizeof(s->path)){
 		errno=ENAMETOOLONG;
 		return -1;
 	}
-	strncpy(socket->path,path,sizeof(socket->path)-1);
+	strncpy(s->path,path,sizeof(s->path)-1);
 	/*if(init_unix_addr(path,&addr,type)!=0){
 		return -1;
 	}*/
-	memset(&server_addr,0,sizeof(socketaddr_un));
-	server_addr->su_family=type;
-	
-	socket->fd=socket(domain,type,0);
-	if(socket->fd<0){
+	memset(&server_addr,0,sizeof(server_addr));
+	server_addr.sun_family=domain;
+	strncpy(server_addr.sun_path,path,sizeof(server_addr.sun_path)-1);
+
+	s->fd=socket(domain,type,0);
+	if(s->fd<0){
 		perror("socket");
 		return -1;
 	}
 	if(type==SOCK_STREAM){
-		if(connect(socket->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
+		if(connect(s->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
 			perror("connect");
-			close(socket->fd);
+			close(s->fd);
 			return -1;
 		} 
 	}else if(type==SOCK_DGRAM){
-		if(connect(socket->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
+		if(connect(s->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
 			perror("connect");
-			close(socket->fd);
+			close(s->fd);
 			return -1;
 		}	
 	}
-	socket->initialized=1;
+	s->initialized=1;
 	return 0;
 }
 
@@ -182,7 +246,7 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 		total_read=bytes_read;
 		
 	}
-	
+	return total_read;
 }
 ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	size_t total_written=0;
@@ -227,3 +291,4 @@ void socket_cleanup(socket_struct_t*socket){
 	}
 	socket->initialized=0;
 }
+
