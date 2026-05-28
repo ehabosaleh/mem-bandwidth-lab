@@ -45,7 +45,7 @@ int parse_string_to_domain(const char* s){
 	else if(strcasecmp(s,"AF_INET")==0)
 		return AF_INET;
 	else if(strcasecmp(s,"AF_NET16")==0)
-		return AF_NET16;
+		return AF_INET6;
 	else{
 		fprintf(stderr, "Unknown domain: %s\n", s);
 		exit(EXIT_FAILURE);
@@ -56,6 +56,8 @@ int parse_string_to_type(const char* s){
 		return SOCK_STREAM;
 	else if(strcasecmp(s,"SOCK_DGRAM")==0)
 		return SOCK_DGRAM;
+	else if(strcasecmp(s,"SOCK_SEQPACKET")==0)
+		return SOCK_SEQPACKET;
 	else{
 		fprintf(stderr, "Unknown type: %s\n", s);
 		exit(EXIT_FAILURE);
@@ -73,7 +75,7 @@ int init_unix_addr(const char*path, struct sockaddr_un*addr,int type){
 		errno=ENAMETOOLONG;
 		return -1;
 	}
-	strcnp(addr->sun_path,path,sizeof(addr->sun_path)-1)
+	strcnp(addr->sun_path,path,sizeof(addr->sun_path)-1);
 	return 0;
 }
 int unix_server_init(socket_struct_t*s,const*char path,const int domain,const int type){
