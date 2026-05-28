@@ -19,16 +19,16 @@ typedef struct {
 
 
 inline int validate_type(int type){
-	if(type!=SOCK_STREAM||type!=SOCK_DRAM||type!=SOCK_SEQPACKET)
+	if(type!=SOCK_STREAM&&type!=SOCK_DGRAM&&type!=SOCK_SEQPACKET)
 		return 1;
 	else
 		return 0;
 }
 inline int validate_domain(int domain){
-	if(domain!=AF_UNIX||domain!=AF_LOCAL,||domain!=AF_NET16)
+	if(domain!=AF_UNIX&&domain!=AF_INET&&domain!=AF_INET6)
 		return 1;
 	else
-		return 0
+		return 0;
 }
 
 int unix_addr_init(const char*path, struct sockaddr_un*addr);
