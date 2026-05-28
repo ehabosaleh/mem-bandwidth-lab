@@ -365,7 +365,6 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
     memcpy(&socket->peer_addr, &peer_addr, sizeof(peer_addr));
     socket->peer_len = peer_len;
     socket->has_peer = 1;
-}
 	return total_read;
 }
 ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
