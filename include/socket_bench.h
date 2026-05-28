@@ -21,17 +21,17 @@ typedef struct {
 	int peer_fd;
 	char path[SOCKET_PATH_MAX];
 	struct sockaddr_un peer_addr;
-    socklen_t peer_len;
-    int has_peer;
+    	socklen_t peer_len;
+    	int has_peer;
 	int is_server;
 	int initialized;
 }socket_struct_t;
 
 typedef struct{
-	unint32_t msg_id;
+	uint32_t msg_id;
 	uint32_t chunk_id;
-    uint32_t total_chunks;
-    uint32_t payload_size;
+    	uint32_t total_chunks;
+    	uint32_t payload_size;
 }dgram_header_t;
 
 static inline int validate_type(int type){
