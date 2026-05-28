@@ -73,4 +73,3 @@ int main(int argc, char **argv){
     return 0;
  
 }
-ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){       
