@@ -69,13 +69,13 @@ int init_unix_addr(const char*path, struct sockaddr_un*addr,int type){
 		errno=EINVAL;
 		return -1;
 	}
-	memset(addr,0,sizeof(sockaddr_un));
-	addr->su_family=type;
+	memset(addr,0,sizeof(*addr));
+	addr->sun_family=type;
 	if(strlen(path)>=sizeof(addr->sun_path)){
 		errno=ENAMETOOLONG;
 		return -1;
 	}
-	strcnp(addr->sun_path,path,sizeof(addr->sun_path)-1);
+	strncpy(addr->sun_path,path,sizeof(addr->sun_path)-1);
 	return 0;
 }
 int unix_server_init(socket_struct_t*s,const char *path,const int domain,const int type){
@@ -84,11 +84,11 @@ int unix_server_init(socket_struct_t*s,const char *path,const int domain,const i
 		errno=EINVAL;
 		return -1;
 	}
-	if(validate(type)!=0){
+	if(validate_type(type)!=0){
 		errno=EINVAL;
 		return -1;
 	}
-	if(validate(domain)!=0){
+	if(validate_domain(domain)!=0){
 		errno=EINVAL;
 		return -1;
 	}
@@ -165,11 +165,11 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 		errno=EINVAL;
 		return -1;
 	}
-	if(validate(type)!=0){
+	if(validate_type(type)!=0){
 		errno=EINVAL;
 		return -1;
 	}
-	if(validate(domain)!=0){
+	if(validate_domain(domain)!=0){
 		errno=EINVAL;
 		return -1;
 	}
