@@ -20,6 +20,7 @@
 #include<mqueue.h>
 #include <sched.h> 
 #include<sys/socket.h>
+#include <sys/un.h>
 
 __attribute__((always_inline)) static inline double now_sec(void){
      struct timespec ts;
