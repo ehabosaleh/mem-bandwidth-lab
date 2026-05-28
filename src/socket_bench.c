@@ -330,14 +330,13 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 					return -1;
 				}
 				offset+=header.payload_size;
-				total_written+=bytes_written;
+				total_written+=header.payload_size;
 			}
 		}
 		if(bytes_written<0){
 			perror("sendto");
 			return -1;
 		}
-		total_written=bytes_written;
 	}
 	return total_written;
 }
