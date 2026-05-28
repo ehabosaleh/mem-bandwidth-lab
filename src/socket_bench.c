@@ -80,7 +80,8 @@ int init_unix_addr(const char*path, struct sockaddr_un*addr,int type){
 }
 int unix_server_init(socket_struct_t*s,const char *path,const int domain,const int type){
 	struct sockaddr_un addr;
-	if(!path||!socket){
+	
+	if(!path||!s){
 		errno=EINVAL;
 		return -1;
 	}
@@ -161,6 +162,9 @@ int unix_server_init(socket_struct_t*s,const char *path,const int domain,const i
 
 int unix_client_init( socket_struct_t *s,const char*path,const int domain,const int type){
 	struct sockaddr_un server_addr;
+	struct sockaddr_un client_addr;
+	char client_path[SOCKET_PATH_MAX];
+
 	if(!path||!s){
 		errno=EINVAL;
 		return -1;
@@ -204,11 +208,23 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 			return -1;
 		} 
 	}else if(type==SOCK_DGRAM){
-		if(connect(s->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
-			perror("connect");
+		snprintf(client_path,sizeof(client_path),"%s_client_%d",path,getpid());
+		unlink(client_path);
+
+		memset(&client_addr,0,sizeof(client_addr));
+		client_addr.sun_family=domain;
+		strncpy(client_add.sun_path,client_path,sizeof(client_addr.sun_path)-1);
+		
+		if(bind(s->fd,(struct sockaddr*)&client_addr,sizeof(client_addr))!=0){
+			perror("bind");
 			close(s->fd);
 			return -1;
-		}	
+		}
+		memcpy(&s->peer_addr,&server_addr,sizeof(server_addr));
+		s->peer_len=sizeof(server_addr);
+		s->has_peer=1;	
+		strncpy(s->path,client_path,sizeof(s->path)-1);
+
 	}
 	s->initialized=1;
 	return 0;
@@ -238,13 +254,18 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 	}
 	else if(socket->type==SOCK_DGRAM){
 		size_t bytes_read=0;
-		do{
-			bytes_read=recv(socket->fd,buffer,size,0);
-		}while(bytes_read<0&&errno==EINTR);
+		struct sockaddr_un peer_addr;
+		socklen_t peer_len=sizeof(peer_addr);
+		memset(&peer_addr,0,sizeof(peer_addr));
+		bytes_read=recvfrom(socket->fd,buffer,size,0,(struct sockaddr*)&peer_addr,&peer_len);
 		if(bytes_read<0){
-			perror("recv");
+			perror("recvfrom");
 			return -1;
 		}
+		memcpy(&socket->peer_addr,&peer_addr,sizeof(peer_addr));
+		socket->peer_len=peer_len;
+		socket->has_peer=1;	
+
 		total_read=bytes_read;
 		
 	}
@@ -270,11 +291,18 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	}
 	else if(socket->type==SOCK_DGRAM){
 		ssize_t bytes_written=0;
-		do{
-			bytes_written=send(socket->fd,buffer,size,0);
-		}while(bytes_written<0&&errno==EINTR);
+		struct sockaddr_un*peer_addr=NUL
+		if(socket->has_peer){
+			peer_addr=&socket->peer_addr;
+		}
+		else{
+			fprintf(stderr,"No peer address available for datagram socket\n");
+			errno=EINVAL;
+			return -1;
+		}
+		bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)peer_addr,socket->peer_len);
 		if(bytes_written<0){
-			perror("send");
+			perror("sendto");
 			return -1;
 		}
 		total_written=bytes_written;
