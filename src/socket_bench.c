@@ -234,8 +234,8 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 	size_t total_read=0;
 	size_t bytes_read=0;
-	struct sockaddr_un*peer_addr=NULL;
-        socklen_t  peer_len=0;
+	struct sockaddr_un peer_addr;
+    socklen_t  peer_len=sizeof(peer_addr);
 	
 	if(!socket||!buffer||size==0||!socket->initialized){
 		errno=EINVAL;
@@ -257,8 +257,8 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 		}
 	}
 	else if(socket->type ==SOCK_DGRAM){
-		size_t received_total=0;
-		uint32_t expected_msg_id=0;
+			size_t received_total=0;
+			uint32_t expected_msg_id=0;
         	uint32_t expected_total_chunks=0;
         	int first_chunk=1;
 
@@ -332,8 +332,6 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 }
 ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	size_t total_written=0;
-	struct sockaddr_un*peer_addr=NULL;
-        socklen_t  peer_len=0;
 	
 	if(!socket||!buffer||size==0||!socket->initialized){
 		errno=EINVAL;
@@ -362,7 +360,7 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 			return -1;
 		}
 		if(size<=DGRAM_CHUNK_SIZE){
-			bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)peer_addr,socket->peer_len);
+			bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)&socket->peer_addr,socket->peer_len);
 			if(bytes_written<0){
 				perror("sendto");
 				return -1;
@@ -385,7 +383,7 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 				memcpy(chunk_buffer,&header,sizeof(header));
 				memcpy(chunk_buffer+sizeof(header),buffer+offset,header.payload_size);
 
-				bytes_written=sendto(socket->fd,chunk_buffer,sizeof(header)+header.payload_size,0,(struct sockaddr*)peer_addr,socket->peer_len);
+				bytes_written=sendto(socket->fd,chunk_buffer,sizeof(header)+header.payload_size,0,(struct sockaddr*)&socket->peer_addr,socket->peer_len);
 				if(bytes_written<0){
 					perror("sendto");
 					return -1;
@@ -414,4 +412,3 @@ void socket_cleanup(socket_struct_t*s){
 	}
 	s->initialized=0;	
 }
-
