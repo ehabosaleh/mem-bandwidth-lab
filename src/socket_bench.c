@@ -268,49 +268,26 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 			socket->has_peer=1;	
 			total_read=bytes_read;
 		}
-		else if (socket->type == SOCK_DGRAM) {
-    struct sockaddr_un peer_addr;
-    socklen_t peer_len = sizeof(peer_addr);
-    ssize_t bytes_read = 0;
+		else if(socket->type ==SOCK_DGRAM){
+			size_t received_total=0;
+			uint32_t expected_msg_id=0;
+        		uint32_t expected_total_chunks=0;
+        		int first_chunk=1;
 
-    memset(&peer_addr, 0, sizeof(peer_addr));
+        		while(received_total<size) {
+            			char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
 
-    if (size <= DGRAM_CHUNK_SIZE) {
-        bytes_read = recvfrom(socket->fd,
-                              buffer,
-                              size,
-                              0,
-                              (struct sockaddr *)&peer_addr,
-                              &peer_len);
+            			bytes_read=recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
 
-        if (bytes_read < 0) {
-            perror("recvfrom");
-            return -1;
-        }
+            			if(bytes_read<0){
+                			perror("recvfrom");
+               	 			return -1;
+            			}
 
-        total_read = (size_t)bytes_read;
-    }
-
-    else if(socket->type ==SOCK_DGRAM){
-		size_t received_total=0;
-		uint32_t expected_msg_id=0;
-        uint32_t expected_total_chunks=0;
-        int first_chunk=1;
-
-        while(received_total<size) {
-            char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
-
-            bytes_read = recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
-
-            if (bytes_read<0){
-                perror("recvfrom");
-                return -1;
-            }
-
-            if ((size_t)bytes_read<sizeof(dgram_header_t)) {
-                fprintf(stderr, "Received packet too small for header\n");
-                return -1;
-            }
+            			if ((size_t)bytes_read<sizeof(dgram_header_t)) {
+                			fprintf(stderr, "Received packet too small for header\n");
+                			return -1;
+            			}
 
             dgram_header_t header;
             memcpy(&header, chunk_buffer, sizeof(header));
