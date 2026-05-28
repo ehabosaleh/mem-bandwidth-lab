@@ -351,14 +351,12 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	}
 	else if(socket->type==SOCK_DGRAM){
 		ssize_t bytes_written=0;
-		if(socket->has_peer){
-			peer_addr=&socket->peer_addr;
-		}
-		else{
+		if!socket->has_peer){
 			fprintf(stderr,"No peer address available for datagram socket\n");
 			errno=EINVAL;
 			return -1;
 		}
+
 		if(size<=DGRAM_CHUNK_SIZE){
 			bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)&socket->peer_addr,socket->peer_len);
 			if(bytes_written<0){
