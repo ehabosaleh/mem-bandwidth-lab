@@ -94,3 +94,57 @@ int unix_server_init(socket_struct_t*socket,const*path,const int domain,const in
 	return 0;
 }
 
+int unix_client_init( socket_struct_t *socket,const*path,const int domain,const int type){
+	struct socketaddr_un server_addr;
+	if(!path||!socket){
+		errno=EINVAL;
+		return -1;
+	}
+	if(validate(type)!=0){
+		errno=EINVAL;
+		return -1;
+	}
+	if(validate(domain)!=0){
+		errno=EINVAL;
+		return -1;
+	}
+	memset(socket,0,sizeof(*socket));
+	socket->domain=domain;
+	socket->type=type;
+	socket->is_server=0;
+	socket->listen_fd=-1;
+	socket->fd=-1;	
+
+	if(strlen(socket->path)<=strlen(path)){
+		errno=ENAMETOOLONG;
+		return -1;
+	}
+	strncpy(socket->path,path,sizeof(socket->path)-1);
+	/*if(init_unix_addr(path,&addr,type)!=0){
+		return -1;
+	}*/
+	memset(&server_addr,0,sizeof(socketaddr_un));
+	server_addr->su_family=type;
+	
+	socket->fd=socket(domain,type,0);
+	if(socket->fd<0){
+		perror("socket");
+		return -1;
+	}
+	if(type==SOCK_STREAM){
+		if(connect(socket->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
+			perror("connect");
+			close(socket->fd);
+			return -1;
+		} 
+	}else if(type==SOCK_DGRAM){
+		if(connect(socket->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
+			perror("connect");
+			close(socket->fd);
+			return -1;
+		}	
+	}
+	socket->initialized=1;
+	return 0;
+}
+
