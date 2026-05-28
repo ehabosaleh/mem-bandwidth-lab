@@ -5,6 +5,11 @@
 
 #define SOCKET_PATH_MAX 108
 
+#define UNIX_SOCKET_PATH "/tmp/unix_socket"//for both server and client when using the STREAM domain 
+
+#define UNIX_SERVER_PATH "/tmp/unix_server" //For server socket unsing the DGRAM domain
+#define UNIX_CLIENT_PATH "/tmp/unix_client"//For client socket using the DGRAM domain
+
 
 typedef struct {
 	int domain;
@@ -13,6 +18,9 @@ typedef struct {
 	int listen_fd;
 	int peer_fd;
 	char path[SOCKET_PATH_MAX];
+	struct sockaddr_un peer_addr;
+    socklen_t peer_len;
+    int has_peer;
 	int is_server;
 	int initialized;
 }socket_struct_t;
