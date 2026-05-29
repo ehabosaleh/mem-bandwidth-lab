@@ -333,7 +333,7 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
         	total_read = received_total;
     	}
 	}
-    	memcpy(&socket->peer_addr, &peer_addr, sizeof(peer_addr));
+    	memcpy(&socket->peer_addr, &peer_addr, sizeof(peer_addr)); //receivefrom fills in the peer_addr for potential future use
     	socket->peer_len = peer_len;
     	socket->has_peer = 1;
     	return total_read;
@@ -365,10 +365,15 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 			return -1;
 		}
 		if(size<=DGRAM_CHUNK_SIZE){
-			bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)&socket->peer_addr,socket->peer_len);
-			if(bytes_written<0){
-				perror("sendto");
-				return -1;
+			bytes_written=sendto(socket->fd,buffer,size,0,(struct sockaddr*)&socket->peer_addr,socket->peer_len);//peer_addr should have been filled by the previous recvfrom call
+				if(bytes_written<0){
+					perror("sendto");
+					return -1;
+				}
+				total_written=bytes_written;
+				if(bytes_written<0){
+					perror("sendto");
+					return -1;
 			}
 			total_written=bytes_written;
 		}
