@@ -257,11 +257,20 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 	}
 	else if(socket->type ==SOCK_DGRAM){
 			size_t received_total=0;
-			uint32_t expected_msg_id=0;
-        	uint32_t expected_total_chunks=0;
-        	int first_chunk=1;
+			if(size<=DGRAM_CHUNK_SIZE){
+				bytes_read=recvfrom(socket->fd,buffer,size,0,(struct sockaddr *)&peer_addr,&peer_len);
+				if(bytes_read<0){
+					perror("recvfrom");
+					return -1;
+				}
+				total_read=bytes_read;
+			}
+			else if(size>DGRAM_CHUNK_SIZE){
+				uint32_t expected_msg_id=0;
+        		uint32_t expected_total_chunks=0;
+        		int first_chunk=1;
 
-        	while(received_total<size) {
+        		while(received_total<size) {
             		char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
 
             		bytes_read=recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
@@ -323,7 +332,7 @@ ssize_t unix_read_all(socket_struct_t*socket,char*buffer,size_t size){
 
         	total_read = received_total;
     	}
-
+	}
     	memcpy(&socket->peer_addr, &peer_addr, sizeof(peer_addr));
     	socket->peer_len = peer_len;
     	socket->has_peer = 1;
