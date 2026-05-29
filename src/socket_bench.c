@@ -126,12 +126,11 @@ int unix_server_init(socket_struct_t*s,const char *path,const int domain,const i
 			close(s->listen_fd);
 			return -1;
 		}
-		if(listen(s->listen_fd,1)!=0){
+		if(listen(s->listen_fd,1)!=0){ 
 			perror("listen");
 			close(s->listen_fd);
 			unlink(path);
-			return -1;
-		
+			return -1;		
 		}
 		s->fd=accept(s->listen_fd,NULL,NULL);
 		if(s->fd<0){
