@@ -397,10 +397,6 @@ ssize_t unix_write_all(socket_struct_t*socket,const char*buffer,size_t size){
 				total_written+=header.payload_size;
 			}
 		}
-		if(bytes_written<0){
-			perror("sendto");
-			return -1;
-		}
 	}
 
 	return total_written;
