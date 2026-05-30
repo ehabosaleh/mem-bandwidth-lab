@@ -35,7 +35,7 @@ int main(int argc, char **argv){
     }
     else if(domain==AF_INET){
         uint16_t port=12345;
-        if(inet_server_init(&socket,NULL,port,type)!=0){
+        if(inet_server_init(&socket,NULL,port,domain,type)!=0){
             fprintf(stderr,"Failed to initialize server socket\n"); 
             return 1;
         }
