@@ -265,7 +265,6 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
 				total_read=bytes_read;
 			}
 			else if(size>DGRAM_CHUNK_SIZE){
-				int first_chunk=1;
         		while(received_total<size) {
 					
             		char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
@@ -279,10 +278,12 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
             		dgram_header_t header;
             		memcpy(&header,chunk_buffer,sizeof(header));        		
             		size_t chunk_offset=(size_t)header.chunk_id*DGRAM_CHUNK_SIZE;
-					if(chunk_offset+header.payload_size!=size){
-						fprintf(stderr,"Received malformed datagram chunk\n");
+
+					if(chunk_offset+header.payload_size>size||chunk_offset+header.payload_size>bytes_read){
+						fprintf(stderr,"Received chunk exceeds expected size\n");
 						return -1;
-					}	
+					}
+					
 					
 
 
