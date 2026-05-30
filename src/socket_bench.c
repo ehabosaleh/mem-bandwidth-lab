@@ -376,6 +376,9 @@ ssize_t write_all(socket_struct_t*socket,const char*buffer,size_t size){
 				}
 				offset+=header.payload_size;
 				total_written+=header.payload_size;
+				if((header.chunk_id%16)==0){
+					usleep(1000);
+				}
 			}
 		}
 	}
