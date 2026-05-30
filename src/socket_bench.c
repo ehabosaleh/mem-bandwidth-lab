@@ -374,7 +374,7 @@ int inet_addr_init(struct sockaddr_in *addr, const char*ip, const uint16_t port)
 	return 0;
 }
 
-int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const int type){
+int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
 	struct sockaddr_in addr;
 	if(!s){
 		errno=EINVAL;
@@ -384,12 +384,12 @@ int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		errno=EINVAL;
 		return -1;
 	}
-	if(validate_domain(AF_INET)!=0){
+	if(validate_domain(domain)!=0){
 		errno=EINVAL;
 		return -1;
 	}
 	memset(s,0,sizeof(*s));
-	s->domain=AF_INET;
+	s->domain=domain;
 	s->type=type;
 	s->is_server=1;
 	s->listen_fd=-1;
@@ -399,7 +399,7 @@ int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		return -1;
 	}
 
-	s->fd=socket(AF_INET,type,0);
+	s->fd=socket(domain,type,0);
 	if(s->fd<0){
 		perror("socket");
 		return -1;
@@ -431,7 +431,7 @@ int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 	return 0;	
 		
 }
-int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const int type){
+int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
 	struct sockaddr_in server_addr;
 	if(!s){
 		errno=EINVAL;
@@ -441,12 +441,12 @@ int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		errno=EINVAL;
 		return -1;
 	}
-	if(validate_domain(AF_INET)!=0){
+	if(validate_domain(domain)!=0){
 		errno=EINVAL;
 		return -1;
 	}
 	memset(s,0,sizeof(*s));
-	s->domain=AF_INET;
+	s->domain=domain;
 	s->type=type;
 	s->is_server=0;
 	s->listen_fd=-1;
@@ -456,7 +456,7 @@ int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		return -1;
 	}
 
-	s->fd=socket(AF_INET,type,0);
+	s->fd=socket(domain,type,0);
 	if(s->fd<0){
 		perror("socket");
 		return -1;
