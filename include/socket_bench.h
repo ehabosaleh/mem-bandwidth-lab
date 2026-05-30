@@ -20,8 +20,7 @@ typedef struct {
 	int listen_fd;
 	int peer_fd;
 	char path[SOCKET_PATH_MAX];
-	struct sockaddr_un peer_addr;
-	struct sockaddr_in peer_addr_in;
+	struct sockaddr_storage peer_addr;
     socklen_t peer_len;
     int has_peer;
 	int is_server;
