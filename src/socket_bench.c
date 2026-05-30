@@ -469,7 +469,7 @@ int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		}
 	}
 	else if(type==SOCK_DGRAM){
-		memcpy(&s->peer_addr_in,&server_addr,sizeof(server_addr));
+		memcpy(&s->peer_addr,&server_addr,sizeof(server_addr));
 		s->peer_len=sizeof(server_addr);
 		s->has_peer=1;	
 	}
