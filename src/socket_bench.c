@@ -358,20 +358,24 @@ ssize_t write_all(socket_struct_t*socket,const char*buffer,size_t size){
 }
 
 int inet_addr_init(struct sockaddr_in *addr, const char*ip, const uint16_t port){
-
-	memset(addr,0,sizeof(*addr));
-	addr->sin_family=AF_INET;
-	addr->sin_port=htons((uint16_t)port);
-
-	if(inet_pton(AF_INET,ip,&addr->sin_addr)<=0){
-		perror("inet_pton");
+	if(!addr){
+		errno=EINVAL;
 		return -1;
 	}
-	if(!ip){
-		addr->sin_addr.s_addr=htonl(INADDR_LOOPBACK);
-		return 0;
+	memset(addr,0,sizeof(*addr));
+	addr->sin_family=AF_INET;
+	addr->sin_port=htons(port);
+	if(ip){
+		if(inet_pton(AF_INET,ip,&addr->sin_addr)<=0){
+			perror("inet_pton");
+			return -1;
+		}
+	}
+	else{
+		addr->sin_addr.s_addr=INADDR_ANY;
 	}
 	return 0;
+	
 }
 
 int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
