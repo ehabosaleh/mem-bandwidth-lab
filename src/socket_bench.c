@@ -439,7 +439,7 @@ int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		close(s->fd);
 		return -1;
 	}
-	
+
 	if(bind(s->fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
 		perror("bind");
 		close(s->fd);
@@ -495,6 +495,10 @@ int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 	s->fd=socket(domain,type,0);
 	if(s->fd<0){
 		perror("socket");
+		return -1;
+	}
+	if(set_socket_buffer_size(s->fd,4*1024*1024)!=0){
+		close(s->fd);
 		return -1;
 	}
 	if(type==SOCK_STREAM){
