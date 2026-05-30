@@ -265,6 +265,9 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
 				total_read=bytes_read;
 			}
 			else if(size>DGRAM_CHUNK_SIZE){
+				uint32_t received_chunks=0;
+				uint32_t total_chunks=(size+DGRAM_CHUNK_SIZE-1)/DGRAM_CHUNK_SIZE;
+
         		while(received_total<size) {
 					
             		char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
@@ -283,6 +286,11 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
             		memcpy(buffer+chunk_offset,chunk_buffer+sizeof(dgram_header_t),header.payload_size);
 
             		received_total += header.payload_size;
+					received_chunks++;
+					if(received_chunks==total_chunks){	
+						break;
+					}
+
         	}
 
         	total_read = received_total;
