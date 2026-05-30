@@ -268,7 +268,7 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
 				uint32_t received_chunks=0;
 				uint32_t total_chunks=(size+DGRAM_CHUNK_SIZE-1)/DGRAM_CHUNK_SIZE;
 
-        		while(received_total<size) {
+        		while(received_chunks<total_chunks) {
 					
             		char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
 
