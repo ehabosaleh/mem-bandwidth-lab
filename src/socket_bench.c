@@ -231,14 +231,11 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 }
 
 ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
-	int sndbuf, rcvbuf;
-socklen_t optlen = sizeof(int);
-
-getsockopt(socket->fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, &optlen);
-getsockopt(socket->fd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, &optlen);
-
-printf("SO_SNDBUF=%d SO_RCVBUF=%d\n", sndbuf, rcvbuf);
-
+	struct timeval tv;
+	tv.tv_sec = TIME_OUT_SEC;
+	tv.tv_usec = 0;
+	setsockopt(socket->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+	
 	ssize_t total_read=0;
 	ssize_t bytes_read=0;
 	struct sockaddr_storage peer_addr;
