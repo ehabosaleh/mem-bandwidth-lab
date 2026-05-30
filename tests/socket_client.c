@@ -27,9 +27,21 @@ int main(int argc, char **argv){
     }
     socket_struct_t socket;
   
-
-    if(unix_client_init(&socket,path,domain,type)!=0){
-        fprintf(stderr,"Failed to initialize client socket\n"); 
+    if(domain==AF_UNIX){
+         if(unix_client_init(&socket,path,domain,type)!=0){
+            fprintf(stderr,"Failed to initialize client socket\n"); 
+            return 1;
+        }
+    }
+    else if(domain==AF_INET){
+        uint16_t port=12345;
+        if(inet_client_init(&socket,NULL,port,domain,type)!=0){
+            fprintf(stderr,"Failed to initialize client socket\n"); 
+            return 1;
+        }
+    }
+     else{
+        fprintf(stderr, "Unsupported domain\n");
         return 1;
     }
     char *buffer=malloc(max_bytes);
@@ -42,13 +54,13 @@ int main(int argc, char **argv){
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
         
         for(int i=0;i<warmup;i++){
-            if(unix_write_all(&socket,buffer,size)!=size){
+            if(write_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to write data to server\n");
                 free(buffer);
                 socket_cleanup(&socket);
                 return 1;
             }
-            if(unix_read_all(&socket,buffer,size)!=size){
+            if(read_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to read data from server\n");
                 free(buffer);                
                 socket_cleanup(&socket);
@@ -56,13 +68,13 @@ int main(int argc, char **argv){
             }
         }
         for(int i=0;i<iters;i++){
-            if(unix_write_all(&socket,buffer,size)!=size){
+            if(write_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to write data to server\n");
                 free(buffer);
                 socket_cleanup(&socket);
                 return 1;
             }
-            if(unix_read_all(&socket,buffer,size)!=size){
+            if(read_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to read data from server\n");
                 free(buffer);                
                 socket_cleanup(&socket);
