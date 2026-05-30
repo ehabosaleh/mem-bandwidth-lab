@@ -235,7 +235,7 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
 	ssize_t bytes_read=0;
 	struct sockaddr_storage peer_addr;
     socklen_t  peer_len=sizeof(peer_addr);
-	
+	ssize_t received_total=0;
 	if(!socket||!buffer||size==0||!socket->initialized){
 		errno=EINVAL;
 		return -1;
