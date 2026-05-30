@@ -1,5 +1,18 @@
 #include"../include/socket_bench.h"
 
+int set_socket_buffer_size(int fd,int size){
+
+	if(setsockopt(fd,SOL_SOCKET,SO_SNDBUF,&size,sizeof(size))!=0){
+		perror("setsockopt SO_SNDBUF");
+		return -1;
+	}
+	if(setsockopt(fd,SOL_SOCKET,SO_RCVBUF,&size,sizeof(size))!=0){
+		perror("setsockopt SO_RCVBUF");
+		return -1;
+	}
+	return 0;
+}
+
 void usage(const char *argv0){
 	fprintf(stderr,
            "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N] [--domain=AF_UNIX/AF_INET] [--type=SOCK_STREAM/SOCK_DGRAM]\n"
@@ -392,6 +405,7 @@ int inet_addr_init(struct sockaddr_in *addr, const char*ip, const uint16_t port)
 }
 
 int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
+	
 	struct sockaddr_in addr;
 	if(!s){
 		errno=EINVAL;
@@ -421,6 +435,11 @@ int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		perror("socket");
 		return -1;
 	}
+	if(set_socket_buffer_size(s->fd,4*1024*1024)!=0){
+		close(s->fd);
+		return -1;
+	}
+	
 	if(bind(s->fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
 		perror("bind");
 		close(s->fd);

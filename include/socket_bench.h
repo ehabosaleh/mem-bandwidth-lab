@@ -59,6 +59,7 @@ ssize_t read_all(socket_struct_t*s,char*buffer,size_t size);
 ssize_t write_all(socket_struct_t*s, const char*buffer,size_t size);
 
 void socket_cleanup(socket_struct_t *socket);
+int set_socket_buffer_size(int fd,int size);
 
 int parse_string_to_type(const char* s);
 int parse_string_to_domain(const char* s);
