@@ -11,7 +11,7 @@
 #define UNIX_CLIENT_PATH "/tmp/unix_client"//For client socket using the DGRAM domain
 
 #define DGRAM_CHUNK_SIZE 8192
-#define TIME_OUT_SEC 5
+#define TIME_OUT_SEC 15
 
 typedef struct {
 	int domain;
