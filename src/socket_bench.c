@@ -279,10 +279,6 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
             		memcpy(&header,chunk_buffer,sizeof(header));        		
             		size_t chunk_offset=(size_t)header.chunk_id*DGRAM_CHUNK_SIZE;
 
-					if(chunk_offset+header.payload_size>bytes_read){
-						fprintf(stderr,"Received chunk exceeds expected size\n");
-						return -1;
-					}
 
             		memcpy(buffer+chunk_offset,chunk_buffer+sizeof(dgram_header_t),header.payload_size);
 
