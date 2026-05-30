@@ -279,7 +279,7 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
             		dgram_header_t header;
             		memcpy(&header,chunk_buffer,sizeof(header));        		
             		size_t chunk_offset=(size_t)header.chunk_id*DGRAM_CHUNK_SIZE;
-					if(bytes_read<sizeof(header)||chunk_offset+header.payload_size!=size){
+					if(chunk_offset+header.payload_size!=size){
 						fprintf(stderr,"Received malformed datagram chunk\n");
 						return -1;
 					}	
