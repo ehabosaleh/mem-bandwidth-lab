@@ -21,6 +21,7 @@ typedef struct {
 	int peer_fd;
 	char path[SOCKET_PATH_MAX];
 	struct sockaddr_un peer_addr;
+	struct sockaddr_in peer_addr_in;
     socklen_t peer_len;
     int has_peer;
 	int is_server;
@@ -48,13 +49,15 @@ static inline int validate_domain(int domain){
 }
 
 int unix_addr_init(const char*path, struct sockaddr_un*addr);
-
 int unix_server_init( socket_struct_t *socket,const char*path,const int domain,const int type);
 int unix_client_init( socket_struct_t *socket,const char*path,const int domain,const int type);
 
-ssize_t unix_read_all(socket_struct_t*s,char*buffer,size_t size);
-ssize_t unix_write_all(socket_struct_t*s, const char*buffer,size_t size);
+int inet_addr_init(struct sockaddr_in *addr, const char*ip, const uint16_t port);
+int inet_server_init(socket_struct_t *socket,const char*ip, const uint16_t port,const int type);
+int inet_client_init(socket_struct_t *socket,const char*ip, const uint16_t port,const int type);
 
+ssize_t read_all(socket_struct_t*s,char*buffer,size_t size);
+ssize_t write_all(socket_struct_t*s, const char*buffer,size_t size);
 
 void socket_cleanup(socket_struct_t *socket);
 
