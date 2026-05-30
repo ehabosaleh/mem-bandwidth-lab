@@ -256,7 +256,6 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
 		}
 	}
 	else if(socket->type ==SOCK_DGRAM){
-			ssize_t received_total=0;
 			if(size<=DGRAM_CHUNK_SIZE){
 				bytes_read=recvfrom(socket->fd,buffer,size,0,(struct sockaddr *)&peer_addr,&peer_len);
 				if(bytes_read<0){
@@ -266,8 +265,9 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
 				total_read=bytes_read;
 			}
 			else if(size>DGRAM_CHUNK_SIZE){
-
+				int first_chunk=1;
         		while(received_total<size) {
+					
             		char chunk_buffer[sizeof(dgram_header_t) + DGRAM_CHUNK_SIZE];
 
             		bytes_read=recvfrom(socket->fd,chunk_buffer,sizeof(chunk_buffer),0,(struct sockaddr *)&peer_addr,&peer_len);
@@ -279,6 +279,12 @@ ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
             		dgram_header_t header;
             		memcpy(&header,chunk_buffer,sizeof(header));        		
             		size_t chunk_offset=(size_t)header.chunk_id*DGRAM_CHUNK_SIZE;
+					if(bytes_read<sizeof(header)||chunk_offset+header.payload_size!=size){
+						fprintf(stderr,"Received malformed datagram chunk\n");
+						return -1;
+					}	
+					
+
 
             		memcpy(buffer+chunk_offset,chunk_buffer+sizeof(dgram_header_t),header.payload_size);
 
