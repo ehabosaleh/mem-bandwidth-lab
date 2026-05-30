@@ -435,7 +435,7 @@ int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		perror("socket");
 		return -1;
 	}
-	if(set_socket_buffer_size(s->fd,4*1024*1024)!=0){
+	if(set_socket_buffer_size(s->fd,100*1024*1024)!=0){
 		close(s->fd);
 		return -1;
 	}
@@ -497,7 +497,7 @@ int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const
 		perror("socket");
 		return -1;
 	}
-	if(set_socket_buffer_size(s->fd,4*1024*1024)!=0){
+	if(set_socket_buffer_size(s->fd,100*1024*1024)!=0){
 		close(s->fd);
 		return -1;
 	}
