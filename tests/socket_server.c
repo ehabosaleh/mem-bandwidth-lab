@@ -27,12 +27,19 @@ int main(int argc, char **argv){
     	
     }
     socket_struct_t socket;
-   
-    if(unix_server_init(&socket,path,domain,type)!=0){
-        fprintf(stderr,"Failed to initialize server socket\n"); 
-        return 1;
+    if(domain==AF_UNIX){
+        if(unix_server_init(&socket,path,domain,type)!=0){
+            fprintf(stderr,"Failed to initialize server socket\n"); 
+            return 1;
+        }
     }
-
+    else if(domain==AF_INET){
+        uint16_t port=12345;
+        if(inet_server_init(&socket,NULL,port,type)!=0){
+            fprintf(stderr,"Failed to initialize server socket\n"); 
+            return 1;
+        }
+    }
     char *buffer=malloc(max_bytes);
     if(!buffer){
         perror("malloc");
@@ -44,13 +51,13 @@ int main(int argc, char **argv){
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
         
         for(int i=0;i<warmup;i++){
-            if(unix_read_all(&socket,buffer,size)!=size){
+            if(read_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to read data from client\n");
                 free(buffer);
                 socket_cleanup(&socket);
                 return 1;
             }
-            if(unix_write_all(&socket,buffer,size)!=size){
+            if(write_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to write data to client\n");
                 free(buffer);
                 socket_cleanup(&socket);
@@ -63,13 +70,13 @@ int main(int argc, char **argv){
 
         for(int i=0;i<iters;i++){
             start_time=now_sec();
-            if(unix_read_all(&socket,buffer,size)!=size){
+            if(read_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to read data from client\n");
                 free(buffer);
                 socket_cleanup(&socket);
                 return 1;
             }
-            if(unix_write_all(&socket,buffer,size)!=size){
+            if(write_all(&socket,buffer,size)!=size){
                 fprintf(stderr,"Failed to write data to client\n");
                 free(buffer);
                 socket_cleanup(&socket);
