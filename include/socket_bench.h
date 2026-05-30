@@ -53,8 +53,8 @@ int unix_server_init( socket_struct_t *socket,const char*path,const int domain,c
 int unix_client_init( socket_struct_t *socket,const char*path,const int domain,const int type);
 
 int inet_addr_init(struct sockaddr_in *addr, const char*ip, const uint16_t port);
-int inet_server_init(socket_struct_t *socket,const char*ip, const uint16_t port,const int type);
-int inet_client_init(socket_struct_t *socket,const char*ip, const uint16_t port,const int type);
+int inet_server_init(socket_struct_t *socket,const char*ip, const uint16_t port, int const domain, const int type);
+int inet_client_init(socket_struct_t *socket,const char*ip, const uint16_t port,int const domain,const int type);
 
 ssize_t read_all(socket_struct_t*s,char*buffer,size_t size);
 ssize_t write_all(socket_struct_t*s, const char*buffer,size_t size);
