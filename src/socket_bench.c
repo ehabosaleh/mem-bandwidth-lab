@@ -243,6 +243,141 @@ int unix_client_init( socket_struct_t *s,const char*path,const int domain,const 
 	return 0;
 }
 
+int inet_addr_init(struct sockaddr_in *addr, const char*ip, const uint16_t port){
+	if(!addr){
+		errno=EINVAL;
+		return -1;
+	}
+	memset(addr,0,sizeof(*addr));
+	addr->sin_family=AF_INET;
+	addr->sin_port=htons(port);
+	if(ip){
+		if(inet_pton(AF_INET,ip,&addr->sin_addr)<=0){
+			perror("inet_pton");
+			return -1;
+		}
+	}
+	else{
+		addr->sin_addr.s_addr=INADDR_ANY;
+	}
+	return 0;
+	
+}
+
+
+int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
+	
+	struct sockaddr_in addr;
+	if(!s){
+		errno=EINVAL;
+		return -1;
+	}
+	if(validate_type(type)!=0){
+		errno=EINVAL;
+		return -1;
+	}
+	if(validate_domain(domain)!=0){
+		errno=EINVAL;
+		return -1;
+	}
+	memset(s,0,sizeof(*s));
+	s->domain=domain;
+	s->type=type;
+	s->is_server=1;
+	s->listen_fd=-1;
+	s->fd=-1;
+
+	if(inet_addr_init(&addr,ip,port)!=0){
+		return -1;
+	}
+
+	s->fd=socket(domain,type,0);
+	if(s->fd<0){
+		perror("socket");
+		return -1;
+	}
+	if(set_socket_buffer_size(s->fd,100*1024*1024)!=0){
+		close(s->fd);
+		return -1;
+	}
+
+	if(bind(s->fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
+		perror("bind");
+		close(s->fd);
+		return -1;
+	}
+	if(type==SOCK_STREAM){
+		if(listen(s->fd,1)!=0){
+			perror("listen");
+			close(s->fd);
+			return -1;
+		}
+		s->listen_fd=s->fd;
+		s->fd=-1;
+		s->fd=accept(s->listen_fd,NULL,NULL);
+		if(s->fd<0){
+			perror("accept");
+			close(s->listen_fd);
+			return -1;
+		}
+	}
+	else if(type==SOCK_DGRAM){
+
+	}
+	s->initialized=1;
+	return 0;	
+		
+}
+int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
+	struct sockaddr_in server_addr;
+	if(!s){
+		errno=EINVAL;
+		return -1;
+	}
+	if(validate_type(type)!=0){
+		errno=EINVAL;
+		return -1;
+	}
+	if(validate_domain(domain)!=0){
+		errno=EINVAL;
+		return -1;
+	}
+	memset(s,0,sizeof(*s));
+	s->domain=domain;
+	s->type=type;
+	s->is_server=0;
+	s->listen_fd=-1;
+	s->fd=-1;
+
+	if(inet_addr_init(&server_addr,ip,port)!=0){
+		return -1;
+	}
+
+	s->fd=socket(domain,type,0);
+	if(s->fd<0){
+		perror("socket");
+		return -1;
+	}
+	if(set_socket_buffer_size(s->fd,100*1024*1024)!=0){
+		close(s->fd);
+		return -1;
+	}
+	if(type==SOCK_STREAM){
+		if(connect(s->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
+			perror("connect");
+			close(s->fd);
+			return -1;
+		}
+	}
+	else if(type==SOCK_DGRAM){
+		memcpy(&s->peer_addr,&server_addr,sizeof(server_addr));
+		s->peer_len=sizeof(server_addr);
+		s->has_peer=1;	
+	}
+	s->initialized=1;
+	return 0;	
+}
+
 ssize_t read_all(socket_struct_t*socket,char*buffer,size_t size){
 	struct timeval tv;
 	tv.tv_sec = TIME_OUT_SEC;
@@ -386,139 +521,8 @@ ssize_t write_all(socket_struct_t*socket,const char*buffer,size_t size){
 	return total_written;
 }
 
-int inet_addr_init(struct sockaddr_in *addr, const char*ip, const uint16_t port){
-	if(!addr){
-		errno=EINVAL;
-		return -1;
-	}
-	memset(addr,0,sizeof(*addr));
-	addr->sin_family=AF_INET;
-	addr->sin_port=htons(port);
-	if(ip){
-		if(inet_pton(AF_INET,ip,&addr->sin_addr)<=0){
-			perror("inet_pton");
-			return -1;
-		}
-	}
-	else{
-		addr->sin_addr.s_addr=INADDR_ANY;
-	}
-	return 0;
-	
-}
 
-int inet_server_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
-	
-	struct sockaddr_in addr;
-	if(!s){
-		errno=EINVAL;
-		return -1;
-	}
-	if(validate_type(type)!=0){
-		errno=EINVAL;
-		return -1;
-	}
-	if(validate_domain(domain)!=0){
-		errno=EINVAL;
-		return -1;
-	}
-	memset(s,0,sizeof(*s));
-	s->domain=domain;
-	s->type=type;
-	s->is_server=1;
-	s->listen_fd=-1;
-	s->fd=-1;
 
-	if(inet_addr_init(&addr,ip,port)!=0){
-		return -1;
-	}
-
-	s->fd=socket(domain,type,0);
-	if(s->fd<0){
-		perror("socket");
-		return -1;
-	}
-	if(set_socket_buffer_size(s->fd,100*1024*1024)!=0){
-		close(s->fd);
-		return -1;
-	}
-
-	if(bind(s->fd,(struct sockaddr*)&addr,sizeof(addr))!=0){
-		perror("bind");
-		close(s->fd);
-		return -1;
-	}
-	if(type==SOCK_STREAM){
-		if(listen(s->fd,1)!=0){
-			perror("listen");
-			close(s->fd);
-			return -1;
-		}
-		s->listen_fd=s->fd;
-		s->fd=-1;
-		s->fd=accept(s->listen_fd,NULL,NULL);
-		if(s->fd<0){
-			perror("accept");
-			close(s->listen_fd);
-			return -1;
-		}
-	}
-	else if(type==SOCK_DGRAM){
-
-	}
-	s->initialized=1;
-	return 0;	
-		
-}
-int inet_client_init(socket_struct_t *s,const char*ip, const uint16_t port,const int domain,const int type){
-	struct sockaddr_in server_addr;
-	if(!s){
-		errno=EINVAL;
-		return -1;
-	}
-	if(validate_type(type)!=0){
-		errno=EINVAL;
-		return -1;
-	}
-	if(validate_domain(domain)!=0){
-		errno=EINVAL;
-		return -1;
-	}
-	memset(s,0,sizeof(*s));
-	s->domain=domain;
-	s->type=type;
-	s->is_server=0;
-	s->listen_fd=-1;
-	s->fd=-1;
-
-	if(inet_addr_init(&server_addr,ip,port)!=0){
-		return -1;
-	}
-
-	s->fd=socket(domain,type,0);
-	if(s->fd<0){
-		perror("socket");
-		return -1;
-	}
-	if(set_socket_buffer_size(s->fd,100*1024*1024)!=0){
-		close(s->fd);
-		return -1;
-	}
-	if(type==SOCK_STREAM){
-		if(connect(s->fd,(struct sockaddr*)&server_addr,sizeof(server_addr))!=0){
-			perror("connect");
-			close(s->fd);
-			return -1;
-		}
-	}
-	else if(type==SOCK_DGRAM){
-		memcpy(&s->peer_addr,&server_addr,sizeof(server_addr));
-		s->peer_len=sizeof(server_addr);
-		s->has_peer=1;	
-	}
-	s->initialized=1;
-	return 0;	
-}
 void socket_cleanup(socket_struct_t*s){
 	if(!s||!s->initialized)
 		return;
