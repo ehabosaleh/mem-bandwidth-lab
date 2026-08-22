@@ -176,7 +176,7 @@ int rdma_get_local_info(struct rdma_resource* res, struct rdma_connection_info* 
     return 0;
 }
 
-int rdma_exchange_info_server(struct rdma_resource*res,rdma_connection_info*local_info,rdma_connection_info*remote_info){
+int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_info*local_info, struct rdma_connection_info*remote_info){
     if(!res||!local_info||!remote_info){
         errno=EINVAL;
         return -1;
@@ -209,7 +209,7 @@ int rdma_exchange_info_server(struct rdma_resource*res,rdma_connection_info*loca
     return 0;
 }
 
-int rdma_exchange_info_client(struct rdma_resource* res, rdma_connection_info* local_info, rdma_connection_info* remote_info){
+int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info){
     if(!res||!local_info||!remote_info){
         errno=EINVAL;
         return -1;
