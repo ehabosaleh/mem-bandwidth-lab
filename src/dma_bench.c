@@ -253,7 +253,7 @@ int rdma_exchange_info_client(struct rdma_resource* res, rdma_connection_info* l
         fprintf(stderr,"Failed to transition QP to RTR\n");
         return -1;
     }
-    if(rdma_qp_to_rts(res)!=0){
+    if(rdma_qp_to_rts(res,local_info->psn)!=0){
         fprintf(stderr,"Failed to transition QP to RTS\n");
         return -1;
     }
