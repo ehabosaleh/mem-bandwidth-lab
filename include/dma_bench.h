@@ -40,4 +40,8 @@ int rdma_check_completion(struct rdma_resource* res);
 
 int rdma_exchange_info_server(struct rdma_resource*res,rdma_connection_info*local_info,rdma_connection_info*remote_info);
 int rdma_exchange_info_client(struct rdma_resource* res, rdma_connection_info* local_info,rdma_connection_info* remote_info);
+
+int rdma_write(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
+int rdma_read(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
+
 #endif
