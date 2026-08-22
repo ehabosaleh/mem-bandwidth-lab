@@ -24,6 +24,8 @@
 #include<stdint.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include<infiniband/verbs.h>
+
 
 __attribute__((always_inline)) static inline double now_sec(void){
      struct timespec ts;
