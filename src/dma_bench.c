@@ -107,7 +107,7 @@ int rdma_qp_to_initial(struct rdma_resource* res,uint8_t port_num){
     return 0;
 }
 
-int rdma_qp_to_rtr(struct rdma_resource* res,const rdma_connection_info *local,const rdma_connection_info *remote,uint8_t port_num){
+int rdma_qp_to_rtr(struct rdma_resource* res,const struct rdma_connection_info *local,const struct rdma_connection_info *remote,uint8_t port_num){
     struct ibv_qp_attr attr = {0};
     int flags=0;
     int ret=1;
