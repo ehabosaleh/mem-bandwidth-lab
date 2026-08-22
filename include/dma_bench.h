@@ -45,6 +45,6 @@ int rdma_write(struct rdma_resource* res, void* buf, size_t size, uint64_t remot
 int rdma_read(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
 
 size_t parse_size(const char* s);
-void usage(const char* prog_name);
+static void usage(const char* prog_name);
 
 #endif
