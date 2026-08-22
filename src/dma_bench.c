@@ -198,7 +198,7 @@ int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_i
         return -1;
     }
     socket_cleanup(&socket);
-    if(rdma_qp_to_rtr(res,remote_info->qp_num,remote_info->lid,1)!=0){
+    if(rdma_qp_to_rtr(res,local_info,remote_info,1)!=0){
         fprintf(stderr,"Failed to transition QP to RTR\n");
         return -1;
     }
@@ -230,7 +230,7 @@ int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_
         return -1;
     }
     socket_cleanup(&socket);
-    if(rdma_qp_to_rtr(res,remote_info->qp_num,remote_info->lid,1)!=0){
+    if(rdma_qp_to_rtr(res,local_info,remote_info,1)!=0){
         fprintf(stderr,"Failed to transition QP to RTR\n");
         return -1;
     }
