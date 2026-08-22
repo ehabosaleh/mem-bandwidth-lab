@@ -4,6 +4,8 @@ project(ipcMicrobenchmark LANGUAGES C)
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(INCLUDE_DIR ${PROJECT_ROOT}/include)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_ROOT}/bin)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBIBVERBS REQUIRED libibverbs)
 
 add_library(pipe_bench STATIC ${PROJECT_ROOT}/src/pipe_bench.c)
 add_library(fifo_bench STATIC ${PROJECT_ROOT}/src/fifo_bench.c)
@@ -44,6 +46,8 @@ add_executable(socket_server tests/socket_server.c)
 target_link_libraries(socket_server PRIVATE socket_bench)
 
 target_include_directories(dma_bench PUBLIC ${INCLUDE_DIR})
+target_link_libraries(dma_bench PUBLIC PkgConfig::LIBIBVERBS socket_bench)
+
 add_executable(dma_server tests/dma_server.c)
 add_executable(dma_client tests/dma_client.c)
 target_link_libraries(dma_server PRIVATE dma_bench)
