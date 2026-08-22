@@ -7,7 +7,7 @@ The following IPC mechanisms are evaluated:
 1. POSIX Pipes (pipe())
 2. POSIX Named Pipes (FIFOs)
 3. POSIX Message Queues
-5. POSIX Shared Memeory
+5. POSIX Shared Memory
 6. UNIX Domain Sockets
     - STREAM
     - DGRAM
