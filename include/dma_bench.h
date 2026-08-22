@@ -44,4 +44,7 @@ int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_
 int rdma_write(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
 int rdma_read(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
 
+size_t parse_size(const char* s);
+void usage(const char* prog_name);
+
 #endif
