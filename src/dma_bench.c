@@ -8,7 +8,7 @@ struct rdma_resource *rdma_resource_init(size_t size){
     int num_devices=0;
 
     if(size==0){
-        errno=EINVAL;
+        perror("Invalid size for RDMA resource");
         return NULL;
     }
 
@@ -21,18 +21,18 @@ struct rdma_resource *rdma_resource_init(size_t size){
     device_list=ibv_get_device_list(&num_devices);
     if (!device_list){
         perror("ibv_get_device_list");
-        goto error;
+        return NULL;
     }
 
     if (num_devices==0){
         fprintf(stderr, "No RDMA devices were found\n");
-        goto error;
+        return NULL;
     }
 
     res->ctx = ibv_open_device(device_list[0]);
     if(!res->ctx){
         perror("ibv_open_device");
-        goto error;
+        return NULL;
     }
 
     ibv_free_device_list(device_list);
@@ -41,12 +41,12 @@ struct rdma_resource *rdma_resource_init(size_t size){
     res->pd = ibv_alloc_pd(res->ctx);
     if(!res->pd){
         perror("ibv_alloc_pd");
-        goto error;
+       return NULL;
     }
     res->buffer=calloc(1, size);
     if(!res->buffer){
         perror("calloc RDMA buffer");
-        goto error;
+        return NULL;
     }
 
     res->buffer_size=size;
@@ -54,14 +54,14 @@ struct rdma_resource *rdma_resource_init(size_t size){
 
     if(!res->mr){
         perror("ibv_reg_mr");
-        goto error;
+        return NULL;
     }
 
     res->cq=ibv_create_cq(res->ctx,1,NULL,NULL,0);
 
     if (!res->cq){
         perror("ibv_create_cq");
-        goto error;
+        return NULL;
     }
 
     struct ibv_qp_init_attr qp_attr = {0};
@@ -80,30 +80,11 @@ struct rdma_resource *rdma_resource_init(size_t size){
     res->qp = ibv_create_qp(res->pd, &qp_attr);
     if (!res->qp){
         perror("ibv_create_qp");
-        goto error;
+        return NULL;
     }
 
     return res;
 
-error:
-    if (device_list)
-        ibv_free_device_list(device_list);
-    if (res) {
-        if (res->qp)
-            ibv_destroy_qp(res->qp);
-        if (res->cq)
-            ibv_destroy_cq(res->cq);
-        if (res->mr)
-            ibv_dereg_mr(res->mr);
-
-        free(res->buffer);
-        if (res->pd)
-            ibv_dealloc_pd(res->pd);
-        if (res->ctx)
-            ibv_close_device(res->ctx);
-        free(res);
-    }
-    return NULL;
 }
 
 int rdma_qp_to_initial(struct rdma_resource* res,uint8_t port_num){
