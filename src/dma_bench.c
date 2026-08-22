@@ -126,19 +126,19 @@ int rdma_qp_to_initial(struct rdma_resource* res,uint8_t port_num){
     return 0;
 }
 
-int rdma_qp_to_rtr(struct rdma_resource* res, uint32_t remote_qpn, uint16_t dlid, uint8_t port_num){
+int rdma_qp_to_rtr(struct rdma_resource* res,const rdma_connection_info *local,const rdma_connection_info *remote,uint8_t port_num){
     struct ibv_qp_attr attr = {0};
     int flags=0;
     int ret=1;
 
     attr.qp_state = IBV_QPS_RTR;
-    attr.path_mtu = IBV_MTU_1024;
-    attr.dest_qp_num = remote_qpn;
-    attr.rq_psn = 0;
+    attr.path_mtu = (enum ibv_mtu)(local->mtu<remote->mtu?local->mtu:remote->mtu);
+    attr.dest_qp_num = remote->qp_num;
+    attr.rq_psn = remote->psn;
     attr.max_dest_rd_atomic = 1;
     attr.min_rnr_timer = 12;
     attr.ah_attr.is_global = 0;
-    attr.ah_attr.dlid = dlid;
+    attr.ah_attr.dlid = remote->lid;
     attr.ah_attr.sl = 0;
     attr.ah_attr.src_path_bits = 0;
     attr.ah_attr.port_num = port_num;
@@ -153,7 +153,7 @@ int rdma_qp_to_rtr(struct rdma_resource* res, uint32_t remote_qpn, uint16_t dlid
     }
     return 0;
 }
-int rdma_qp_to_rts(struct rdma_resource* res){
+int rdma_qp_to_rts(struct rdma_resource* res,uint32_t local_psn){
     struct ibv_qp_attr attr = {0};
     int flags=0;
     int ret=1;
@@ -162,7 +162,7 @@ int rdma_qp_to_rts(struct rdma_resource* res){
     attr.timeout = 14;
     attr.retry_cnt = 7;
     attr.rnr_retry = 7;
-    attr.sq_psn = 0;
+    attr.sq_psn=local_psn;
     attr.max_rd_atomic = 1;
 
     flags = IBV_QP_STATE | IBV_QP_TIMEOUT | IBV_QP_RETRY_CNT |
@@ -259,8 +259,6 @@ int rdma_exchange_info_client(struct rdma_resource* res, rdma_connection_info* l
     }
     return 0;
 }
-
-
 
 
 int rdma_write(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey) {
