@@ -4,8 +4,9 @@ project(ipcMicrobenchmark LANGUAGES C)
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(INCLUDE_DIR ${PROJECT_ROOT}/include)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_ROOT}/bin)
+
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBIBVERBS REQUIRED libibverbs)
+pkg_check_modules(LIBIBVERBS REQUIRED IMPORTED_TARGET libibverbs)
 
 add_library(pipe_bench STATIC ${PROJECT_ROOT}/src/pipe_bench.c)
 add_library(fifo_bench STATIC ${PROJECT_ROOT}/src/fifo_bench.c)
