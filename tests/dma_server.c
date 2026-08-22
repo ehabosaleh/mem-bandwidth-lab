@@ -14,10 +14,10 @@ int main(int argc, char** argv) {
         else if (strncmp(argv[i], "--warmup=", 9) == 0) warmup = atoi(argv[i] + 9);
         else if (strncmp(argv[i], "--rdma-op=", 10) == 0) rdma_op = argv[i] + 10;
         else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-             usage(argv[0]);
+             dma_usage(argv[0]);
         }else{
              fprintf(stderr, "Unknown arg: %s\n", argv[i]);
-             usage(argv[0]);
+             dma_usage(argv[0]);
          }
     }
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
                 rdma_resource_cleanup(res);
                 return 1;
             }
-            
+
         }
         double end_time=now_sec();
         double total_time=end_time-start_time;

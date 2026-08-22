@@ -1,7 +1,7 @@
 #include"../include/dma_bench.h"
 #include"../include/socket_bench.h"
 
-static void usage(const char* prog_name){
+void dma_usage(const char* prog_name){
     fprintf(stderr,
            "Usage: %s [--min-bytes=N] [--max-bytes=N] [--iters=N] [--warmup=N] [--rdma-op=write/read]\n"
            "Examples:\n"

@@ -17,7 +17,7 @@ int main(int argc,char**argv){
              usage(argv[0]);
         }else{
              fprintf(stderr, "Unknown arg: %s\n", argv[i]);
-             usage(argv[0]);
+             dma_usage(argv[0]);
          }
     }
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
