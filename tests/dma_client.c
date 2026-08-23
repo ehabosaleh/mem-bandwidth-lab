@@ -38,53 +38,23 @@ int main(int argc,char**argv){
             return 1;
         }
         struct rdma_connection_info remote_info;
-        if(rdma_exchange_info_client(res,&local_info,&remote_info)!=0){
+        socket_struct_t socket;
+        if(rdma_exchange_info_client(res,&local_info,&remote_info,&socket)!=0){
             fprintf(stderr,"Failed to exchange connection info with server\n");
             rdma_resource_cleanup(res);
             return 1;
         }
         for(int i=0;i<warmup;i++){
-            if(strcmp(rdma_op,"write")==0){
-                if(rdma_write(res,res->buffer,size,remote_info.buffer_addr,remote_info.rkey)!=0){
-                    fprintf(stderr,"Failed to perform RDMA write\n");
-                    rdma_resource_cleanup(res);
-                    return 1;
-                }
-            }else if(strcmp(rdma_op,"read")==0){
-                if(rdma_read(res,res->buffer,size,remote_info.buffer_addr,remote_info.rkey)!=0){
-                    fprintf(stderr,"Failed to perform RDMA read\n");
-                    rdma_resource_cleanup(res);
-                    return 1;
-                }
-            }
-            if(rdma_check_completion(res)!=1){
-                fprintf(stderr,"RDMA operation did not complete successfully\n");
-                rdma_resource_cleanup(res);
-                return 1;
-            }
+            rdma_send_control_message(&socket,RDMA_MSG_READY);
+            rdma_receive_control_message(&socket,RDMA_MSG_DONE);
         }
         
         for(int i=0;i<iters;i++){
-            if(strcmp(rdma_op,"write")==0){
-                if(rdma_write(res,res->buffer,size,remote_info.buffer_addr,remote_info.rkey)!=0){
-                    fprintf(stderr,"Failed to perform RDMA write\n");
-                    rdma_resource_cleanup(res);
-                    return 1;
-                }
-            }else if(strcmp(rdma_op,"read")==0){
-                if(rdma_read(res,res->buffer,size,remote_info.buffer_addr,remote_info.rkey)!=0){
-                    fprintf(stderr,"Failed to perform RDMA read\n");
-                    rdma_resource_cleanup(res);
-                    return 1;
-                }
-            }
-            if(rdma_check_completion(res)!=1){
-                fprintf(stderr,"RDMA operation did not complete successfully\n");
-                rdma_resource_cleanup(res);
-                return 1;
-            }
+           rdma_send_control_message(&socket,RDMA_MSG_READY);
+           rdma_receive_control_message(&socket,RDMA_MSG_DONE);
         }
         rdma_resource_cleanup(res);
+        socket_cleanup(&socket);
     }
     return 0;
 }
