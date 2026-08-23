@@ -27,7 +27,7 @@ struct rdma_connection_info{
     uint8_t  mtu;
 };
 enum{
-    RDMA_MSG_READ=0,
+    RDMA_MSG_READY=0,
     RDMA_MSG_DONE=1,
     RDMA_MSG_ACK=2,
 };
@@ -49,6 +49,8 @@ int sync_rdma_completion(struct rdma_resource* res, struct rdma_connection_info*
 
 int rdma_write(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
 int rdma_read(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
+int rdma_send_control_message(socket_struct_t *socket, uint8_t msg_type);
+int rdma_receive_control_message(socket_struct_t *socket, uint8_t msg_type);
 
 void dma_usage(const char* prog_name);
 
