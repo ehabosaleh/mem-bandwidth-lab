@@ -26,6 +26,11 @@ struct rdma_connection_info{
     uint16_t lid;
     uint8_t  mtu;
 };
+enum{
+    RDMA_MSG_READ=0,
+    RDMA_MSG_DONE=1,
+    RDMA_MSG_ACK=2,
+};
 
 struct rdma_resource* rdma_resource_init(size_t size); // reset state
 int rdma_qp_to_initial(struct rdma_resource* res,uint8_t port_num);// init state
@@ -40,10 +45,12 @@ int rdma_check_completion(struct rdma_resource* res);
 
 int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_info*local_info, struct rdma_connection_info*remote_info);
 int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info);
+int sync_rdma_completion(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info, int is_server);
 
 int rdma_write(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
 int rdma_read(struct rdma_resource* res, void* buf, size_t size, uint64_t remote_addr, uint32_t rkey);
 
 void dma_usage(const char* prog_name);
+
 
 #endif
