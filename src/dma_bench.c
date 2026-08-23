@@ -274,7 +274,7 @@ int rdma_receive_control_message(socket_struct_t *socket, uint8_t msg_type) {
         return -1;
     }
     if(message!=msg_type){
-        fprintf(stderr,"Unexpected RDMA control message: " "expected=%u received=%u\n",expected,message);
+        fprintf(stderr,"Unexpected RDMA control message: " "expected=%u received=%u\n",msg_type,message);
         return -1;
     }
     return 0;
