@@ -20,8 +20,9 @@ int main(int argc,char**argv){
              dma_usage(argv[0]);
          }
     }
-    socket_struct_t socket;
+    
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
+        socket_struct_t socket;
         struct rdma_resource *res=rdma_resource_init(size);
         if(!res){
             fprintf(stderr,"Failed to initialize RDMA resource\n");

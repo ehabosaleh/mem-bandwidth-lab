@@ -21,10 +21,10 @@ int main(int argc, char** argv) {
          }
     }
 
-    socket_struct_t socket;
+    
     printf("%-20s %-20s %-20s\n","Bytes","Latency(us)","Bandwidth(MiB/s)");
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
-
+        socket_struct_t socket;
         struct rdma_resource *res=rdma_resource_init(size);
         if(!res){
             fprintf(stderr,"Failed to initialize RDMA resource\n");
