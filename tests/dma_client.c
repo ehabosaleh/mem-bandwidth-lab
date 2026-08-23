@@ -21,31 +21,34 @@ int main(int argc,char**argv){
          }
     }
     
-    for(size_t size=min_bytes;size<=max_bytes;size*=2){
-        socket_struct_t socket;
-        struct rdma_resource *res=rdma_resource_init(size);
-        if(!res){
+
+    socket_struct_t socket;
+    struct rdma_resource *res=rdma_resource_init(max_bytes);
+    if(!res){
             fprintf(stderr,"Failed to initialize RDMA resource\n");
             return 1;
-        }
-        if(rdma_qp_to_initial(res,1)!=0){
+    }
+    if(rdma_qp_to_initial(res,1)!=0){
             fprintf(stderr,"Failed to transition QP to INIT\n");
             rdma_resource_cleanup(res);
             return 1;
-        }
-        struct rdma_connection_info local_info;
-        if(rdma_get_local_info(res,&local_info,1)!=0){
+    }
+    struct rdma_connection_info local_info;
+    if(rdma_get_local_info(res,&local_info,1)!=0){
             fprintf(stderr,"Failed to get local connection info\n");
             rdma_resource_cleanup(res);
             return 1;
-        }
-        struct rdma_connection_info remote_info;
+    }
+    struct rdma_connection_info remote_info;
         
-        if(rdma_exchange_info_client(res,&local_info,&remote_info,&socket)!=0){
+    if(rdma_exchange_info_client(res,&local_info,&remote_info,&socket)!=0){
             fprintf(stderr,"Failed to exchange connection info with server\n");
             rdma_resource_cleanup(res);
             return 1;
-        }
+    }
+
+    for(size_t size=min_bytes;size<=max_bytes;size*=2){
+        
         for(int i=0;i<warmup;i++){
             rdma_send_control_message(&socket,RDMA_MSG_READY);
             rdma_receive_control_message(&socket,RDMA_MSG_DONE);
@@ -55,9 +58,9 @@ int main(int argc,char**argv){
            rdma_send_control_message(&socket,RDMA_MSG_READY);
            rdma_receive_control_message(&socket,RDMA_MSG_DONE);
         }
-        rdma_resource_cleanup(res);
-        socket_cleanup(&socket);
+        
     }
-    
+    rdma_resource_cleanup(res);
+    socket_cleanup(&socket);
     return 0;
 }
