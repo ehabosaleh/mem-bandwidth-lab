@@ -65,9 +65,12 @@ int main(int argc, char** argv) {
                 }
             }
 
-            while(!rdma_check_completion(res)){}
+            if(rdma_wait_for_completion(res)!=0){
+                fprintf(stderr, "RDMA operation failed\n");
+                rdma_resource_cleanup(res);
+                return 1;
+            }
             rdma_send_control_message(&socket,RDMA_MSG_DONE);
-            return 0;
         }
 
         double total_time=0.0;
@@ -88,8 +91,8 @@ int main(int argc, char** argv) {
                     return 1;
                 }
             }
-            if(rdma_check_completion(res)!=0){
-                fprintf(stderr,"RDMA operation did not complete successfully\n");
+            if(rdma_wait_for_completion(res)!=0){
+                fprintf(stderr, "RDMA operation failed\n");
                 rdma_resource_cleanup(res);
                 return 1;
             }

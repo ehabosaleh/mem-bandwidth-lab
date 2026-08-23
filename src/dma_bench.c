@@ -254,7 +254,6 @@ int rdma_send_control_message(socket_struct_t *socket, uint8_t msg_type) {
         errno = EINVAL;
         return -1;
     }
-    int message=msg_type;
     ssize_t bytes_sent = write_all(socket, (char*)&msg_type, sizeof(msg_type));
     
     if (bytes_sent != sizeof(msg_type)) {
@@ -351,12 +350,15 @@ int rdma_check_completion(struct rdma_resource* res) {
         return 1;
     }
 }
+int rdma_wait_for_completion(struct rdma_resource *res){
+    for (;;) {
+        int status = rdma_check_completion(res);
+        if (status == 1)
+            return 0;
 
-int sync_rdma_completion(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info, int is_server) {
-    if (is_server) {
-
+        if (status == -1)
+            return -1;
     }
-    return 0;
 }
 
 int rdma_resource_cleanup(struct rdma_resource* res){
