@@ -1,6 +1,7 @@
 #ifndef DMA_BENCH_H
 #define DMA_BENCH_H
 #include"mem_bench.h"
+#include"../include/socket_bench.h"
 
 struct ibv_context;
 struct ibv_pd;
