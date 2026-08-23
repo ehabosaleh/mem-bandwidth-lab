@@ -259,7 +259,7 @@ int rdma_send_control_message(socket_struct_t *socket, uint8_t msg_type) {
     
     if (bytes_sent != sizeof(msg_type)) {
         fprintf(stderr, "Failed to send control message\n");
-        fprintf(stderr,"Expected size %u Received size %zd \n",sizeof(msg_type),bytes_received);
+        fprintf(stderr,"Expected size %zu Received size %zd \n",sizeof(msg_type),bytes_sent);
         return -1;
     }
     
@@ -276,7 +276,7 @@ int rdma_receive_control_message(socket_struct_t *socket, uint8_t msg_type) {
    
     if (bytes_received != sizeof(message)) {
         fprintf(stderr, "Failed to receive control message\n");
-        fprintf(stderr,"Expected size %u Received size %zd \n",sizeof(msg_type),bytes_received);
+        fprintf(stderr,"Expected size %zu Received size %zd \n",sizeof(msg_type),bytes_received);
         fprintf(stderr,"Message= %u \n",message);
         return -1;
     }
