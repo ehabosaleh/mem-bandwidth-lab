@@ -186,28 +186,27 @@ int rdma_get_local_info(struct rdma_resource* res, struct rdma_connection_info* 
     return 0;
 }
 
-int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_info*local_info, struct rdma_connection_info*remote_info){
+int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_info*local_info, struct rdma_connection_info*remote_info,scoket_struct_t *socket){
     if(!res||!local_info||!remote_info){
         errno=EINVAL;
         return -1;
     }
-    socket_struct_t socket;
-    if(inet_server_init(&socket,NULL,12345,AF_INET,SOCK_STREAM)!=0){
+    if(inet_server_init(socket,NULL,12345,AF_INET,SOCK_STREAM)!=0){
         fprintf(stderr,"Failed to initialize server socket\n");
         return -1;
     }
-    if(write_all(&socket,(char*)local_info,sizeof(*local_info))!=sizeof(*local_info)){
+    if(write_all(socket,(char*)local_info,sizeof(*local_info))!=sizeof(*local_info)){
         fprintf(stderr,"Failed to send local connection info\n");
-        socket_cleanup(&socket);
+        socket_cleanup(socket);
         return -1;
     }
    
-    if(read_all(&socket,(char*)remote_info,sizeof(*remote_info))!=sizeof(*remote_info)){
+    if(read_all(socket,(char*)remote_info,sizeof(*remote_info))!=sizeof(*remote_info)){
         fprintf(stderr,"Failed to receive remote connection info\n");
-        socket_cleanup(&socket);
+        socket_cleanup(socket);
         return -1;
     }
-    socket_cleanup(&socket);
+    //socket_cleanup(&socket);
     if(rdma_qp_to_rtr(res,local_info,remote_info,1)!=0){
         fprintf(stderr,"Failed to transition QP to RTR\n");
         return -1;
@@ -219,33 +218,57 @@ int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_i
     return 0;
 }
 
-int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info){
+int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info,socket_struct_t *socket){
     if(!res||!local_info||!remote_info){
         errno=EINVAL;
         return -1;
     }
-    socket_struct_t socket;
-    if(inet_client_init(&socket,NULL,12345,AF_INET,SOCK_STREAM)!=0){
+    if(inet_client_init(socket,NULL,12345,AF_INET,SOCK_STREAM)!=0){
         fprintf(stderr,"Failed to initialize client socket\n");
         return -1;
     }
-    if(read_all(&socket,(char*)remote_info,sizeof(*remote_info))!=sizeof(*remote_info)){
+    if(read_all(socket,(char*)remote_info,sizeof(*remote_info))!=sizeof(*remote_info)){
         fprintf(stderr,"Failed to receive remote connection info\n");
-        socket_cleanup(&socket);
+        socket_cleanup(socket);
         return -1;
     }
-    if(write_all(&socket,(char*)local_info,sizeof(*local_info))!=sizeof(*local_info)){
+    if(write_all(socket,(char*)local_info,sizeof(*local_info))!=sizeof(*local_info)){
         fprintf(stderr,"Failed to send local connection info\n");
-        socket_cleanup(&socket);
+        socket_cleanup(socket);
         return -1;
     }
-    socket_cleanup(&socket);
+    //socket_cleanup(&socket);
     if(rdma_qp_to_rtr(res,local_info,remote_info,1)!=0){
         fprintf(stderr,"Failed to transition QP to RTR\n");
         return -1;
     }
     if(rdma_qp_to_rts(res,local_info->psn)!=0){
         fprintf(stderr,"Failed to transition QP to RTS\n");
+        return -1;
+    }
+    return 0;
+}
+
+int rdma_send_control_message(socket_struct_t *socket, uint8_t msg_type) {
+    if (!socket) {
+        errno = EINVAL;
+        return -1;
+    }
+    ssize_t bytes_sent = write_all(socket, (char*)&msg_type, sizeof(msg_type));
+    if (bytes_sent != sizeof(msg_type)) {
+        fprintf(stderr, "Failed to send control message\n");
+        return -1;
+    }
+    return 0;
+}
+int rdma_receive_control_message(socket_struct_t *socket, uint8_t *msg_type) {
+    if (!socket || !msg_type) {
+        errno = EINVAL;
+        return -1;
+    }
+    ssize_t bytes_received = read_all(socket, (char*)msg_type, sizeof(*msg_type));
+    if (bytes_received != sizeof(*msg_type)) {
+        fprintf(stderr, "Failed to receive control message\n");
         return -1;
     }
     return 0;
@@ -313,6 +336,13 @@ int rdma_check_completion(struct rdma_resource* res) {
         }
         return 1;
     }
+}
+
+int sync_rdma_completion(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info, int is_server) {
+    if (is_server) {
+
+    }
+    return 0;
 }
 
 int rdma_resource_cleanup(struct rdma_resource* res){
