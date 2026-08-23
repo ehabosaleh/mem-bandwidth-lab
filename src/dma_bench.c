@@ -186,7 +186,7 @@ int rdma_get_local_info(struct rdma_resource* res, struct rdma_connection_info* 
     return 0;
 }
 
-int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_info*local_info, struct rdma_connection_info*remote_info,scoket_struct_t *socket){
+int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_info*local_info, struct rdma_connection_info*remote_info,socket_struct_t *socket){
     if(!res||!local_info||!remote_info){
         errno=EINVAL;
         return -1;
@@ -261,13 +261,13 @@ int rdma_send_control_message(socket_struct_t *socket, uint8_t msg_type) {
     }
     return 0;
 }
-int rdma_receive_control_message(socket_struct_t *socket, uint8_t *msg_type) {
-    if (!socket || !msg_type) {
+int rdma_receive_control_message(socket_struct_t *socket, uint8_t msg_type) {
+    if (!socket) {
         errno = EINVAL;
         return -1;
     }
-    ssize_t bytes_received = read_all(socket, (char*)msg_type, sizeof(*msg_type));
-    if (bytes_received != sizeof(*msg_type)) {
+    ssize_t bytes_received = read_all(socket, msg_type, sizeof(msg_type));
+    if (bytes_received != sizeof(msg_type)) {
         fprintf(stderr, "Failed to receive control message\n");
         return -1;
     }
