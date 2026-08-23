@@ -43,6 +43,7 @@ int rdma_resource_cleanup(struct rdma_resource* res);
 
 
 int rdma_check_completion(struct rdma_resource* res);
+int rdma_wait_for_completion(struct rdma_resource *res);
 
 int rdma_exchange_info_server(struct rdma_resource*res, struct rdma_connection_info*local_info, struct rdma_connection_info*remote_info,socket_struct_t *socket);
 int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_info* local_info, struct rdma_connection_info* remote_info,socket_struct_t *socket);
