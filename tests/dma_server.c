@@ -105,9 +105,9 @@ int main(int argc, char** argv) {
         double bandwidth=(size/latency)/(1024.0*1024.0);
         printf("%-20zu %-20.3f %-20.3f\n",size, latency_us, bandwidth);
         rdma_resource_cleanup(res);
-        
+        socket_cleanup(&socket);
     }
-    socket_cleanup(&socket);
+    
     return 0;
     
    

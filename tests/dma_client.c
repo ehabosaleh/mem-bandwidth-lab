@@ -56,8 +56,8 @@ int main(int argc,char**argv){
            rdma_receive_control_message(&socket,RDMA_MSG_DONE);
         }
         rdma_resource_cleanup(res);
-        
+        socket_cleanup(&socket);
     }
-    socket_cleanup(&socket);
+    
     return 0;
 }
