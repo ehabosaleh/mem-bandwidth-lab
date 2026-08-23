@@ -249,42 +249,85 @@ int rdma_exchange_info_client(struct rdma_resource* res, struct rdma_connection_
     return 0;
 }
 
-int rdma_send_control_message(socket_struct_t *socket, uint8_t msg_type) {
-    if (!socket) {
+int rdma_send_control_message(
+    socket_struct_t *socket,
+    uint8_t message)
+{
+    if (!socket || !socket->initialized) {
         errno = EINVAL;
         return -1;
     }
-    int message=msg_type;
-    ssize_t bytes_sent = write_all(socket, (char*)&msg_type, sizeof(msg_type));
-    
-    if (bytes_sent != sizeof(msg_type)) {
-        fprintf(stderr, "Failed to send control message\n");
-        fprintf(stderr,"Expected size %zu Received size %zd \n",sizeof(msg_type),bytes_sent);
+
+    ssize_t bytes_sent =
+        write_all(socket, (char *)&message, sizeof(message));
+
+    if (bytes_sent < 0) {
+        perror("write_all(control)");
         return -1;
     }
-    
+
+    if (bytes_sent != (ssize_t)sizeof(message)) {
+        fprintf(stderr,
+                "Incomplete control message: "
+                "expected=%zu sent=%zd\n",
+                sizeof(message),
+                bytes_sent);
+        return -1;
+    }
 
     return 0;
 }
-int rdma_receive_control_message(socket_struct_t *socket, uint8_t msg_type) {
-    if (!socket) {
+
+int rdma_receive_control_message(
+    socket_struct_t *socket,
+    uint8_t expected_message)
+{
+    if (!socket || !socket->initialized) {
         errno = EINVAL;
         return -1;
     }
-    uint8_t message=0;
-    ssize_t bytes_received = read_all(socket,(char*)&message, sizeof(message));
-   
-    if (bytes_received != sizeof(message)) {
-        fprintf(stderr, "Failed to receive control message\n");
-        fprintf(stderr,"Expected size %zu Received size %zd \n",sizeof(msg_type),bytes_received);
-        fprintf(stderr,"Message= %u \n",message);
+
+    uint8_t received_message = 0;
+
+    ssize_t bytes_received =
+        read_all(socket,
+                 (char *)&received_message,
+                 sizeof(received_message));
+
+    if (bytes_received < 0) {
+        perror("read_all(control)");
+        fprintf(stderr,
+                "Socket state: fd=%d initialized=%d\n",
+                socket->fd,
+                socket->initialized);
         return -1;
     }
-    
-    if(message!=msg_type){
-        fprintf(stderr,"Unexpected RDMA control message: " "expected=%u received=%u\n",msg_type,message);
+
+    if (bytes_received == 0) {
+        fprintf(stderr,
+                "Peer closed the control connection\n");
         return -1;
     }
+
+    if (bytes_received !=
+        (ssize_t)sizeof(received_message)) {
+        fprintf(stderr,
+                "Incomplete control message: "
+                "expected=%zu received=%zd\n",
+                sizeof(received_message),
+                bytes_received);
+        return -1;
+    }
+
+    if (received_message != expected_message) {
+        fprintf(stderr,
+                "Unexpected control message: "
+                "expected=%u received=%u\n",
+                (unsigned)expected_message,
+                (unsigned)received_message);
+        return -1;
+    }
+
     return 0;
 }
 
