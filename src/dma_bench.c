@@ -254,6 +254,7 @@ int rdma_send_control_message(socket_struct_t *socket, uint8_t msg_type) {
         errno = EINVAL;
         return -1;
     }
+    int message=msg_type;
     ssize_t bytes_sent = write_all(socket, (char*)&msg_type, sizeof(msg_type));
     if (bytes_sent != sizeof(msg_type)) {
         fprintf(stderr, "Failed to send control message\n");
@@ -266,9 +267,14 @@ int rdma_receive_control_message(socket_struct_t *socket, uint8_t msg_type) {
         errno = EINVAL;
         return -1;
     }
-    ssize_t bytes_received = read_all(socket, (char*)&msg_type, sizeof(msg_type));
-    if (bytes_received != sizeof(msg_type)) {
+    uint8_t message=0;
+    ssize_t bytes_received = read_all(socket, (char*)&message, sizeof(message));
+    if (bytes_received != sizeof(message)) {
         fprintf(stderr, "Failed to receive control message\n");
+        return -1;
+    }
+    if(message!=msg_type){
+        fprintf(stderr,"Unexpected RDMA control message: " "expected=%u received=%u\n",expected,message);
         return -1;
     }
     return 0;
