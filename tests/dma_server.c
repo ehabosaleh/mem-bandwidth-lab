@@ -20,6 +20,8 @@ int main(int argc, char** argv) {
              dma_usage(argv[0]);
          }
     }
+    
+    printf("%-20s %-20s %-20s\n","Bytes","Latency(us)","Bandwidth(MiB/s)");
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
 
         struct rdma_resource *res=rdma_resource_init(size);
@@ -39,14 +41,17 @@ int main(int argc, char** argv) {
             return 1;
         }
         struct rdma_connection_info remote_info;
-        if(rdma_exchange_info_server(res,&local_info,&remote_info)!=0){
+        socket_struct_t socket;
+        if(rdma_exchange_info_server(res,&local_info,&remote_info,&socket)!=0){
             fprintf(stderr,"Failed to exchange connection info with client\n");
             rdma_resource_cleanup(res);
             return 1;
         }
         
         for(int i=0;i<warmup;i++){
+            rdma_receive_control_message(&socket,RDMA_MSG_READY);
             if(strcmp(rdma_op,"write")==0){
+                
                 if(rdma_write(res,res->buffer,size,remote_info.buffer_addr,remote_info.rkey)!=0){
                     fprintf(stderr,"Failed to perform RDMA write\n");
                     rdma_resource_cleanup(res);
@@ -59,17 +64,17 @@ int main(int argc, char** argv) {
                     return 1;
                 }
             }
-            if(rdma_check_completion(res)!=0){
-                fprintf(stderr,"RDMA operation did not complete successfully\n");
-                rdma_resource_cleanup(res);
-                return 1;
-            }
+
+            while(!rdma_check_completion(res)){}
+            rdma_send_control_message(&socket,RDMA_MSG_DONE);
+            return 0;
         }
 
-        printf("%-20s %-20s %-20s\n","Bytes","Latency(us)","Bandwidth(MiB/s)");
-
-        double start_time=now_sec();
+        double total_time=0.0;
+       
         for(int i=0;i<iters;i++){
+            rdma_receive_control_message(&socket,RDMA_MSG_READY);
+             double start_time=now_sec();
             if(strcmp(rdma_op,"write")==0){
                 if(rdma_write(res,res->buffer,size,remote_info.buffer_addr,remote_info.rkey)!=0){
                     fprintf(stderr,"Failed to perform RDMA write\n");
@@ -88,15 +93,15 @@ int main(int argc, char** argv) {
                 rdma_resource_cleanup(res);
                 return 1;
             }
-
+            total_time+=now_sec()-start_time;
+            rdma_send_control_message(&socket,RDMA_MSG_DONE);
         }
-        double end_time=now_sec();
-        double total_time=end_time-start_time;
         double latency=total_time/iters;
         double latency_us=latency*1e6;
         double bandwidth=(size/latency)/(1024.0*1024.0);
         printf("%-20zu %-20.3f %-20.3f\n",size, latency_us, bandwidth);
         rdma_resource_cleanup(res);
+        socket_cleanup(&socket);
     }
     return 0;
     
