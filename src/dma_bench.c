@@ -266,7 +266,7 @@ int rdma_receive_control_message(socket_struct_t *socket, uint8_t msg_type) {
         errno = EINVAL;
         return -1;
     }
-    ssize_t bytes_received = read_all(socket, msg_type, sizeof(msg_type));
+    ssize_t bytes_received = read_all(socket, (char*)&msg_type, sizeof(msg_type));
     if (bytes_received != sizeof(msg_type)) {
         fprintf(stderr, "Failed to receive control message\n");
         return -1;
