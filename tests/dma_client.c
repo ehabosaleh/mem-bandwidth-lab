@@ -20,6 +20,7 @@ int main(int argc,char**argv){
              dma_usage(argv[0]);
          }
     }
+    socket_struct_t socket;
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
         struct rdma_resource *res=rdma_resource_init(size);
         if(!res){
@@ -38,7 +39,7 @@ int main(int argc,char**argv){
             return 1;
         }
         struct rdma_connection_info remote_info;
-        socket_struct_t socket;
+        
         if(rdma_exchange_info_client(res,&local_info,&remote_info,&socket)!=0){
             fprintf(stderr,"Failed to exchange connection info with server\n");
             rdma_resource_cleanup(res);
@@ -54,7 +55,8 @@ int main(int argc,char**argv){
            rdma_receive_control_message(&socket,RDMA_MSG_DONE);
         }
         rdma_resource_cleanup(res);
-        socket_cleanup(&socket);
+        
     }
+    socket_cleanup(&socket);
     return 0;
 }
