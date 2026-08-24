@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
                 rdma_resource_cleanup(res);
                 return 1;
             }
-            rdma_send_control_message(&socket,RDMA_MSG_DONE);
+            rdma_send_control_message(&socket,RDMA_MSG_FIN);
         }
 
         double total_time=0.0;
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
                 return 1;
             }
             total_time+=now_sec()-start_time;
-            rdma_send_control_message(&socket,RDMA_MSG_DONE);
+            rdma_send_control_message(&socket,RDMA_MSG_FIN);
         }
         double latency=total_time/iters;
         double latency_us=latency*1e6;

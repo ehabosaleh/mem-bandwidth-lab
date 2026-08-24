@@ -29,7 +29,7 @@ struct rdma_connection_info{
 };
 enum{
     RDMA_MSG_READY=0,
-    RDMA_MSG_DONE=1,
+    RDMA_MSG_FIN=1,
     RDMA_MSG_ACK=2,
 };
 

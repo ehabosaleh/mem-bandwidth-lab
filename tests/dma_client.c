@@ -51,12 +51,12 @@ int main(int argc,char**argv){
         
         for(int i=0;i<warmup;i++){
             rdma_send_control_message(&socket,RDMA_MSG_READY);
-            rdma_receive_control_message(&socket,RDMA_MSG_DONE);
+            rdma_receive_control_message(&socket,RDMA_MSG_FIN);
         }
         
         for(int i=0;i<iters;i++){
            rdma_send_control_message(&socket,RDMA_MSG_READY);
-           rdma_receive_control_message(&socket,RDMA_MSG_DONE);
+           rdma_receive_control_message(&socket,RDMA_MSG_FIN);
         }
         
     }
