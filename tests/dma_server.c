@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
             rdma_resource_cleanup(res);
             return 1;
     }
-
+    printf("Running DMA-%s benchmark \n",rdma_op);
     printf("%-20s %-20s %-20s\n","Bytes","Latency(us)","Bandwidth(MiB/s)");
     for(size_t size=min_bytes;size<=max_bytes;size*=2){
         
