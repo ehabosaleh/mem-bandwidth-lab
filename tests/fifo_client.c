@@ -63,8 +63,6 @@ int main(int argc,char**argv){
         free(buf);
     }
     char *terminate=NULL;
-
-    write_
     write_all(wfd,terminate,0);
 
     close(rfd);
