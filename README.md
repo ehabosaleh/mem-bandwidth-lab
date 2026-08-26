@@ -14,6 +14,6 @@ The following IPC mechanisms are evaluated:
 7. Internet Domains Sockets:
     - STREAM (TCP/IP)
     - DGRAM (UDP)
-9. TODO: DMA verbs
+9. libibverbs (RDMA)
 
 All benchmarks use a ping-pong methodology to derive latency and bandwidth.
