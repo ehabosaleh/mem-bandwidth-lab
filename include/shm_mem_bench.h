@@ -1,7 +1,6 @@
 #ifndef SHM_MEM_BENCH_H
 #define SHM_MEM_BENCH_H
 
-#include <sys/mman.h>
 #include"mem_bench.h"
 
 #define SHM_NAME "/shm_bench"
