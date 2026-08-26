@@ -27,6 +27,7 @@ struct rdma_resource *rdma_resource_init(size_t size){
         perror("calloc rdma_resource");
         return NULL;
     }
+    
 
     device_list=ibv_get_device_list(&num_devices);
     if (!device_list){
@@ -51,13 +52,19 @@ struct rdma_resource *rdma_resource_init(size_t size){
     res->pd = ibv_alloc_pd(res->ctx);
     if(!res->pd){
         perror("ibv_alloc_pd");
-       return NULL;
+        return NULL;
     }
     res->buffer=calloc(1, size);
     if(!res->buffer){
         perror("calloc RDMA buffer");
         return NULL;
     }
+    if(mlock(res->buffer,size)!=0){
+        perror("mlock RDMA buffer");
+        munlock(res->buffer, size);
+        return NULL;
+    }
+
 
     res->buffer_size=size;
     res->mr=ibv_reg_mr(res->pd,res->buffer,size,IBV_ACCESS_LOCAL_WRITE|IBV_ACCESS_REMOTE_READ|IBV_ACCESS_REMOTE_WRITE);
