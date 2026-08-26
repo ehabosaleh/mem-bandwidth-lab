@@ -31,7 +31,10 @@ int main(){
             break;
         char*buf=malloc(size);
         read_all(rfd,buf,size);
+        if(strcasecmp(buf,"FIN")==0)
+            break;
 
+            
         write_all(wfd,&size,sizeof(size));
         write_all(wfd,buf,size);
 
