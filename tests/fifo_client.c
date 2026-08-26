@@ -64,7 +64,7 @@ int main(int argc,char**argv){
     }
     char *terminate="FIN";
     uint64_t size=3;
-    write_all(wfd,size,sizeof(size));
+    write_all(wfd,&size,sizeof(size));
     write_all(wfd,terminate,size);
 
     close(rfd);
