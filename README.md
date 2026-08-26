@@ -15,5 +15,3 @@ The following IPC mechanisms are evaluated:
     - STREAM (TCP/IP)
     - DGRAM (UDP)
 9. libibverbs (RDMA)
-
-All benchmarks use a ping-pong methodology to derive latency and bandwidth.
