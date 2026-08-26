@@ -62,6 +62,11 @@ int main(int argc,char**argv){
         printf("%-12lu %-12.3f %-12.3f\n",size, one_way*1e6, (size/one_way)/(1024.0*1024.0));
         free(buf);
     }
+    char *terminate=NULL;
+
+    write_
+    write_all(wfd,terminate,0);
+
     close(rfd);
     close(wfd);
 
