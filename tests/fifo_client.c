@@ -19,8 +19,8 @@ int main(int argc,char**argv){
          }
      }
 
-    int wfd=open(SERVER_FIFO,O_WRONLY);
-    int rfd=open(CLIENT_FIFO,O_RDONLY);
+    int rfd=open(SERVER_FIFO,O_WRONLY);
+    int wfd=open(CLIENT_FIFO,O_RDONLY);
     if(wfd<0||rfd<0){
         perror("Client-FIFO:Open");
         exit(EXIT_FAILURE);
