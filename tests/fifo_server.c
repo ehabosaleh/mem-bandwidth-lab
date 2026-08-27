@@ -17,10 +17,10 @@ int main(){
          exit(EXIT_FAILURE);
      }
     
-    int rfd=open(SERVER_FIFO,O_RDONLY);
-    int wfd=open(CLIENT_FIFO,O_WRONLY);
+    int wfd=open(SERVER_FIFO,O_WRONLY);
+    int rfd=open(CLIENT_FIFO,O_RDONLY);
     if(rfd<0||wfd<0){
-        perror("FIFO:Open");
+        perror("CLIENT-FIFO:Open");
         exit(EXIT_FAILURE);
     }
 
@@ -34,7 +34,7 @@ int main(){
         if(strcasecmp(buf,"FIN")==0)
             break;
 
-            
+
         write_all(wfd,&size,sizeof(size));
         write_all(wfd,buf,size);
 
