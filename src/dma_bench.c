@@ -11,6 +11,25 @@ void dma_usage(const char* prog_name){
     exit(EXIT_FAILURE);
 }
 
+int rdma_get_local_info(struct rdma_resource* res, struct rdma_connection_info* info, uint8_t port_num){
+    if(!res || !info){
+        errno=EINVAL;
+        return -1;
+    }
+    struct ibv_port_attr port_attr;
+    if(ibv_query_port(res->ctx, port_num, &port_attr)){
+        perror("ibv_query_port");
+        return -1;
+    }
+    info->qp_num = res->qp->qp_num;
+    info->psn = 0;
+    info->rkey = res->mr->rkey;
+    info->buffer_addr = (uint64_t)(uintptr_t)res->mr->addr;
+    info->lid = port_attr.lid;
+    info->mtu = port_attr.active_mtu;
+
+    return 0;
+}
 
 struct rdma_resource *rdma_resource_init(size_t size){
     struct rdma_resource *res=NULL;
@@ -28,7 +47,6 @@ struct rdma_resource *rdma_resource_init(size_t size){
         return NULL;
     }
     
-
     device_list=ibv_get_device_list(&num_devices);
     if (!device_list){
         perror("ibv_get_device_list");
@@ -59,12 +77,12 @@ struct rdma_resource *rdma_resource_init(size_t size){
         perror("calloc RDMA buffer");
         return NULL;
     }
+
     if(mlock(res->buffer,size)!=0){
         perror("mlock RDMA buffer");
         munlock(res->buffer, size);
         return NULL;
     }
-
 
     res->buffer_size=size;
     res->mr=ibv_reg_mr(res->pd,res->buffer,size,IBV_ACCESS_LOCAL_WRITE|IBV_ACCESS_REMOTE_READ|IBV_ACCESS_REMOTE_WRITE);
@@ -101,7 +119,6 @@ struct rdma_resource *rdma_resource_init(size_t size){
     }
 
     return res;
-
 }
 
 int rdma_qp_to_initial(struct rdma_resource* res,uint8_t port_num){
@@ -171,25 +188,6 @@ int rdma_qp_to_rts(struct rdma_resource* res,uint32_t local_psn){
         perror("ibv_modify_qp to RTS");
         return -1;
     }
-    return 0;
-}
-int rdma_get_local_info(struct rdma_resource* res, struct rdma_connection_info* info, uint8_t port_num){
-    if(!res || !info){
-        errno=EINVAL;
-        return -1;
-    }
-    struct ibv_port_attr port_attr;
-    if(ibv_query_port(res->ctx, port_num, &port_attr)){
-        perror("ibv_query_port");
-        return -1;
-    }
-    info->qp_num = res->qp->qp_num;
-    info->psn = 0;
-    info->rkey = res->mr->rkey;
-    info->buffer_addr = (uint64_t)(uintptr_t)res->mr->addr;
-    info->lid = port_attr.lid;
-    info->mtu = port_attr.active_mtu;
-
     return 0;
 }
 
